@@ -3,6 +3,7 @@ python-oslo.policy (1.16.0-0ubuntu1) UNRELEASED; urgency=medium
   * d/gbp.conf: Update gbp configuration file.
   * d/control: Update Vcs-* links and maintainers.
   * New upstream release.
+  * d/control: Align (Build-)Depends with upstream.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Wed, 19 Oct 2016 16:01:08 -0400
 
