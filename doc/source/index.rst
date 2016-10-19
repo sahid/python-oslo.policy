@@ -2,6 +2,9 @@
  oslo.policy
 =============
 
+An OpenStack library providing support for RBAC policy enforcement across all
+OpenStack services.
+
 Contents
 ========
 
@@ -14,6 +17,14 @@ Contents
    opts
    cli
    contributing
+   sphinxpolicygen
+
+Release Notes
+=============
+
+.. toctree::
+   :maxdepth: 1
+
    history
 
 Indices and tables
