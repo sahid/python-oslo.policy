@@ -275,7 +275,6 @@ NotCheck = _checks.NotCheck
 A policy check that inverts the result of another policy check.
 
 :param rule: The rule to negate.
-:type rule: oslo_policy.policy.Check
 
 """
 
@@ -297,7 +296,8 @@ class PolicyNotAuthorized(Exception):
     """Default exception raised for policy enforcement failure."""
 
     def __init__(self, rule, target, creds):
-        msg = (_('%(rule)s on %(target)s by %(creds)s disallowed by policy') %
+        msg = (_('%(target)s is disallowed by policy rule %(rule)s '
+                 'with %(creds)s ') %
                {'rule': rule, 'target': target, 'creds': creds})
         super(PolicyNotAuthorized, self).__init__(msg)
 
@@ -325,11 +325,19 @@ def parse_file_contents(data):
                                      'policy_name2': 'policy2,...}
     """
     try:
-        parsed = yaml.safe_load(data)
-    except yaml.YAMLError as e:
-        # For backwards-compatibility, convert yaml error to ValueError,
-        # which is what JSON loader raised.
-        raise ValueError(six.text_type(e))
+        # NOTE(snikitin): jsonutils.loads() is much faster than
+        # yaml.safe_load(). However jsonutils.loads() parses only JSON while
+        # yaml.safe_load() parses JSON and YAML. So here we try to parse data
+        # by jsonutils.loads() first. In case of failure yaml.safe_load()
+        # will be used instead.
+        parsed = jsonutils.loads(data)
+    except ValueError:
+        try:
+            parsed = yaml.safe_load(data)
+        except yaml.YAMLError as e:
+            # For backwards-compatibility, convert yaml error to ValueError,
+            # which is what JSON loader raised.
+            raise ValueError(six.text_type(e))
     return parsed
 
 
@@ -596,7 +604,10 @@ class Enforcer(object):
         rules = getattr(check, 'rules', None)
         if rules:
             for rule in rules:
-                if self._cycle_check(rule, seen):
+                # As there being an OrCheck or AndCheck, a copy of the father's
+                # seen should be called here. In order that the checks in
+                # different branchs are seperated.
+                if self._cycle_check(rule, seen.copy()):
                     return True
         return False
 
