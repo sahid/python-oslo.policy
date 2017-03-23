@@ -1,3 +1,10 @@
+python-oslo.policy (1.21.0-0ubuntu1) zesty; urgency=medium
+
+  * New upstream release. 
+  * d/control: Align (Build-)Depends with upstream.
+
+ -- Chuck Short <zulcss@ubuntu.com>  Thu, 23 Mar 2017 12:01:14 -0400
+
 python-oslo.policy (1.18.0-0ubuntu1) zesty; urgency=medium
 
   * New upstream release. 
