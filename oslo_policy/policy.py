@@ -314,6 +314,20 @@ class PolicyNotRegistered(Exception):
         super(PolicyNotRegistered, self).__init__(msg)
 
 
+class InvalidDefinitionError(Exception):
+    def __init__(self, names):
+        msg = _('Policies %(names)s are not well defined. Check logs for '
+                'more details.') % {'names': names}
+        super(InvalidDefinitionError, self).__init__(msg)
+
+
+class InvalidRuleDefault(Exception):
+    def __init__(self, error):
+        msg = (_('Invalid policy rule default: '
+                 '%(error)s.') % {'error': error})
+        super(InvalidRuleDefault, self).__init__(msg)
+
+
 def parse_file_contents(data):
     """Parse the raw contents of a policy file.
 
@@ -321,8 +335,8 @@ def parse_file_contents(data):
     yaml or json format. Both can be parsed as yaml.
 
     :param data: A string containing the contents of a policy file.
-    :returns: A dict of of the form {'policy_name1': 'policy1',
-                                     'policy_name2': 'policy2,...}
+    :returns: A dict of the form {'policy_name1': 'policy1',
+                                  'policy_name2': 'policy2,...}
     """
     try:
         # NOTE(snikitin): jsonutils.loads() is much faster than
@@ -541,7 +555,7 @@ class Enforcer(object):
             # Detect and log obvious incorrect rule definitions
             self.check_rules()
 
-    def check_rules(self):
+    def check_rules(self, raise_on_violation=False):
         """Look for rule definitions that are obviously incorrect."""
         undefined_checks = []
         cyclic_checks = []
@@ -560,6 +574,9 @@ class Enforcer(object):
         if cyclic_checks:
             LOG.warning(_LW('Policies %(names)s are part of a cyclical '
                         'reference.'), {'names': cyclic_checks})
+
+        if raise_on_violation and violation:
+            raise InvalidDefinitionError(undefined_checks + cyclic_checks)
 
         return not violation
 
@@ -822,3 +839,56 @@ class RuleDefault(object):
                  isinstance(other, self.__class__))):
             return True
         return False
+
+
+class DocumentedRuleDefault(RuleDefault):
+    """A class for holding policy-in-code policy objects definitions
+
+    This class provides the same functionality as the RuleDefault class, but it
+    also requires additional data about the policy rule being registered. This
+    is necessary so that proper documentation can be rendered based on the
+    attributes of this class. Eventually, all usage of RuleDefault should be
+    converted to use DocumentedRuleDefault.
+
+    :param operations: List of dicts containing each api url and
+                       corresponding http request method.
+
+                       Example:
+                       operations=[{'path': '/foo', 'method': 'GET'},
+                                   {'path': '/some', 'method': 'POST'}]
+    """
+    def __init__(self, name, check_str, description, operations):
+        super(DocumentedRuleDefault, self).__init__(
+            name, check_str, description)
+        self.operations = operations
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        # Validates description isn't empty.
+        if not value:
+            raise InvalidRuleDefault('Description is required')
+        self._description = value
+
+    @property
+    def operations(self):
+        return self._operations
+
+    @operations.setter
+    def operations(self, ops):
+        if not isinstance(ops, list):
+            raise InvalidRuleDefault('Operations must be a list')
+        if not ops:
+            raise InvalidRuleDefault('Operations list must not be empty')
+
+        for op in ops:
+            if 'path' not in op:
+                raise InvalidRuleDefault('Operation must contain a path')
+            if 'method' not in op:
+                raise InvalidRuleDefault('Operation must contain a method')
+            if len(op.keys()) > 2:
+                raise InvalidRuleDefault('Operation contains > 2 keys')
+        self._operations = ops

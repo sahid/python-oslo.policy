@@ -60,7 +60,9 @@ class GenerateSampleTestCase(base.PolicyBaseTestCase):
         output_file = self.get_config_file_fullname('policy.yaml')
         with mock.patch('stevedore.named.NamedExtensionManager',
                         return_value=test_mgr) as mock_ext_mgr:
-            generator._generate_sample(['base_rules', 'rules'], output_file)
+            # generate sample-policy file with only rules
+            generator._generate_sample(['base_rules', 'rules'], output_file,
+                                       include_help=False)
             mock_ext_mgr.assert_called_once_with(
                 'oslo.policy.policies', names=['base_rules', 'rules'],
                 on_load_failure_callback=generator.on_load_failure_callback,
@@ -87,14 +89,18 @@ class GenerateSampleTestCase(base.PolicyBaseTestCase):
             extensions=extensions, namespace=['base_rules', 'rules'])
 
         expected = '''# Basic admin check
-"admin": "is_admin:True"
+#"admin": "is_admin:True"
+
 # This is a long description to check that line wrapping functions
 # properly
-"owner": "project_id:%(project_id)s"
+#"owner": "project_id:%(project_id)s"
+
 #
-"shared": "field:networks:shared=True"
+#"shared": "field:networks:shared=True"
+
 #
-"admin_or_owner": "rule:admin or rule:owner"
+#"admin_or_owner": "rule:admin or rule:owner"
+
 '''
         output_file = self.get_config_file_fullname('policy.yaml')
         with mock.patch('stevedore.named.NamedExtensionManager',
@@ -120,14 +126,18 @@ class GenerateSampleTestCase(base.PolicyBaseTestCase):
             extensions=extensions, namespace=['base_rules', 'rules'])
 
         expected = '''# Basic admin check
-"admin": "is_admin:True"
+#"admin": "is_admin:True"
+
 # This is a long description to check that line wrapping functions
 # properly
-"owner": "project_id:%(project_id)s"
+#"owner": "project_id:%(project_id)s"
+
 #
-"shared": "field:networks:shared=True"
+#"shared": "field:networks:shared=True"
+
 #
-"admin_or_owner": "rule:admin or rule:owner"
+#"admin_or_owner": "rule:admin or rule:owner"
+
 '''
         stdout = self._capture_stdout()
         with mock.patch('stevedore.named.NamedExtensionManager',
@@ -140,6 +150,40 @@ class GenerateSampleTestCase(base.PolicyBaseTestCase):
                 invoke_on_load=True)
 
         self.assertEqual(expected, stdout.getvalue())
+
+    def test_empty_line_formatting(self):
+        rule = [policy.RuleDefault('admin', 'is_admin:True',
+                                   description='Check Summary \n'
+                                   '\n'
+                                   'This is a description to '
+                                   'check that empty line has '
+                                   'no white spaces.')]
+        ext = stevedore.extension.Extension(name='check_rule',
+                                            entry_point=None,
+                                            plugin=None, obj=rule)
+        test_mgr = stevedore.named.NamedExtensionManager.make_test_instance(
+            extensions=[ext], namespace=['check_rule'])
+
+        # no whitespace on empty line
+        expected = '''# Check Summary
+#
+# This is a description to check that empty line has no white spaces.
+#"admin": "is_admin:True"
+
+'''
+        output_file = self.get_config_file_fullname('policy.yaml')
+        with mock.patch('stevedore.named.NamedExtensionManager',
+                        return_value=test_mgr) as mock_ext_mgr:
+            generator._generate_sample(['check_rule'], output_file)
+            mock_ext_mgr.assert_called_once_with(
+                'oslo.policy.policies', names=['check_rule'],
+                on_load_failure_callback=generator.on_load_failure_callback,
+                invoke_on_load=True)
+
+        with open(output_file, 'r') as written_file:
+            written_policy = written_file.read()
+
+        self.assertEqual(expected, written_policy)
 
 
 class GeneratorRaiseErrorTestCase(testtools.TestCase):
@@ -188,7 +232,9 @@ class GeneratePolicyTestCase(base.PolicyBaseTestCase):
         sample_file = self.get_config_file_fullname('policy-sample.yaml')
         with mock.patch('stevedore.named.NamedExtensionManager',
                         return_value=test_mgr):
-            generator._generate_sample(['base_rules', 'rules'], sample_file)
+            # generate sample-policy file with only rules
+            generator._generate_sample(['base_rules', 'rules'], sample_file,
+                                       include_help=False)
 
         enforcer = policy.Enforcer(self.conf, policy_file='policy-sample.yaml')
         # register an opt defined in the file
@@ -246,7 +292,9 @@ class ListRedundantTestCase(base.PolicyBaseTestCase):
         sample_file = self.get_config_file_fullname('policy-sample.yaml')
         with mock.patch('stevedore.named.NamedExtensionManager',
                         return_value=test_mgr):
-            generator._generate_sample(['base_rules', 'rules'], sample_file)
+            # generate sample-policy file with only rules
+            generator._generate_sample(['base_rules', 'rules'], sample_file,
+                                       include_help=False)
 
         enforcer = policy.Enforcer(self.conf, policy_file='policy-sample.yaml')
         # register opts that match those defined in policy-sample.yaml
