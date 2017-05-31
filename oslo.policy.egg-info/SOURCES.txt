@@ -40,6 +40,7 @@ oslo_policy/generator.py
 oslo_policy/opts.py
 oslo_policy/policy.py
 oslo_policy/shell.py
+oslo_policy/sphinxext.py
 oslo_policy/sphinxpolicygen.py
 oslo_policy/version.py
 oslo_policy/locale/ar/LC_MESSAGES/oslo_policy-log-error.po
@@ -79,10 +80,12 @@ oslo_policy/tests/test_generator.py
 oslo_policy/tests/test_opts.py
 oslo_policy/tests/test_parser.py
 oslo_policy/tests/test_policy.py
+oslo_policy/tests/test_sphinxext.py
 oslo_policy/tests/test_sphinxpolicygen.py
 oslo_policy/tests/token_fixture.py
 releasenotes/notes/add-sphinxpolicygen-39e2f8fa24930b0c.yaml
 releasenotes/notes/add_reno-3b4ae0789e9c45b4.yaml
+releasenotes/notes/oslo-policy-descriptive-support-3ee688c5fa48d751.yaml
 releasenotes/source/conf.py
 releasenotes/source/index.rst
 releasenotes/source/newton.rst
