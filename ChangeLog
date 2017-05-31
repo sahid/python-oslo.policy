@@ -1,10 +1,27 @@
 CHANGES
 =======
 
+1.23.0
+------
+
+* Updated from global requirements
+* Simplify message of exception PolicyNotAuthorized
+* Updated from global requirements
+
+1.22.1
+------
+
+* Updated from global requirements
+* Add Sphinx extension to pretty-print modules
+* Optimize the link address
+* Check reStructuredText documents for common style issues
+
 1.22.0
 ------
 
 * Update usage documentation
+* Add release note for DocumentedRuleDefault
+* Remove log translations
 * oslopolicy-sample-generator description support
 * Use Sphinx 1.5 warning-is-error
 
@@ -12,7 +29,7 @@ CHANGES
 ------
 
 * Comment out the rule from generated sample-policy file
-* Modify tests in test_generator
+* Modify tests in test\_generator
 * Add additional param to policy.RuleDefault
 * Updated from global requirements
 * Seperate each policy rule with new line
@@ -30,10 +47,10 @@ CHANGES
 * Updated from global requirements
 * Updated from global requirements
 * Remove support for py34
-* pbr.version.VersionInfo needs package name (oslo.xyz and not oslo_xyz)
+* pbr.version.VersionInfo needs package name (oslo.xyz and not oslo\_xyz)
 * Delete the unnecessary word in policy.py
 * Update reno for stable/ocata
-* Add optional exception for check_rules
+* Add optional exception for check\_rules
 
 1.18.0
 ------
@@ -46,12 +63,12 @@ CHANGES
 1.17.0
 ------
 
-* Improved performance of parse_file_contents() method
+* Improved performance of parse\_file\_contents() method
 * Show team and repo badges on README
 * Remove wrong parameter type for class NotCheck from docstring
 * Fix a code logic while doing cyclical reference check to the policy
 * Updated from global requirements
-* Add missing parameter description in module _cache_handler
+* Add missing parameter description in module \_cache\_handler
 * Fix typo in oslo.policy
 * Updated from global requirements
 * Add stevedore to requirements
@@ -93,7 +110,7 @@ CHANGES
 ------
 
 * Updated from global requirements
-* Add note about not all APIs support policy enforcement by user_id
+* Add note about not all APIs support policy enforcement by user\_id
 * Allow policy file to not exist
 * Adds debug logging for policy file validation
 * Fixed unit tests running on Windows
@@ -149,7 +166,7 @@ CHANGES
 * Imported Translations from Zanata
 * Updated from global requirements
 * Updated from global requirements
-* Deprecate load_json() in favor of load()
+* Deprecate load\_json() in favor of load()
 * Support policy file in YAML
 
 1.5.0
@@ -180,10 +197,10 @@ CHANGES
 -----
 
 * Updated from global requirements
-* Add string format rendering to RoleCheck.__call__()
+* Add string format rendering to RoleCheck.\_\_call\_\_()
 * Pass environment variables of proxy to tox
 * Fixes combined "and" and "or" rule handling
-* Make sure item of policy_dirs is directory
+* Make sure item of policy\_dirs is directory
 * Updated from global requirements
 * Use dict comprehension
 * Don't generate doc from test
@@ -229,9 +246,9 @@ CHANGES
 * Add shields.io version/downloads links/badges into README.rst
 * Updated from global requirements
 * Use requests in http check instead of urllib
-* Change ignore-errors to ignore_errors
+* Change ignore-errors to ignore\_errors
 * Updated from global requirements
-* remove deprecation text for policy_dirs option
+* remove deprecation text for policy\_dirs option
 
 0.11.0
 ------
@@ -257,7 +274,7 @@ CHANGES
 -----
 
 * Updated from global requirements
-* Fix typo of 'available' in token_fixture.py
+* Fix typo of 'available' in token\_fixture.py
 * Fixes up the API docs and module index
 
 0.7.0
@@ -288,7 +305,7 @@ CHANGES
 -----
 
 * Uncap library requirements for liberty
-* Fix invalid indentation in _load_policy_file method
+* Fix invalid indentation in \_load\_policy\_file method
 * Cleanup README.rst and setup.cfg
 * Avoid reloading policy files in policy.d for every call
 * Lists for Generic Checks
@@ -302,7 +319,7 @@ CHANGES
 0.3.0
 -----
 
-* deprecate policy_dirs option
+* deprecate policy\_dirs option
 * Updated from global requirements
 * Expose register and Check as part of public API
 * provide more descriptive exception
@@ -311,7 +328,7 @@ CHANGES
 -----
 
 * Add missing space to help message
-* Add Rules.from_dict classmethod
+* Add Rules.from\_dict classmethod
 * Use assertTrue or assertFalse where appropriate
 * Fix the order of args to assertEqual in tests
 
@@ -325,7 +342,7 @@ CHANGES
 * Create the temporary files needed for tests
 * Fix minor spelling issues in oslo.policy
 * Use single quotes consistently
-* Do not log on missing or empty policy_dirs
+* Do not log on missing or empty policy\_dirs
 * Remove symlinked file from tests
 * document the migration process and update the docs a bit
 * Use standard logging in oslo.policy
@@ -338,8 +355,8 @@ CHANGES
 * Make use of private modules
 * Privatize parsing classes
 * Add entry points for option discovery
-* Add pep8 import exception for oslo_policy._i18n
-* Use oslo_i18n
+* Add pep8 import exception for oslo\_policy.\_i18n
+* Use oslo\_i18n
 * Perform an oslo-sync
 * General docstring cleanup
 * Drop use of oslo namespace for oslo libraries
@@ -360,10 +377,10 @@ CHANGES
 * Don't log missing policy.d as a warning
 * Add rule overwrite flag to Enforcer class
 * Fixed a problem with neutron http policy check
-* Expanding the help text for policy_dirs
+* Expanding the help text for policy\_dirs
 * policy: add a missing staticmethod declaration
 * Fixes nits in module policy
-* add list_opts to all modules with configuration options
+* add list\_opts to all modules with configuration options
 * Correct default rule name for policy.Enforcer
 * Minor fixes in policy module
 * Delete graduated serialization files
@@ -371,7 +388,7 @@ CHANGES
 * Allow dictionary lookup in credentials with dot notation
 * Remove graduated test and fixtures libraries
 * Fix typo to show correct log message
-* Use MultiStrOpt for policy_dirs
+* Use MultiStrOpt for policy\_dirs
 * Add support for policy configration directories
 * Fix deletion of cached file for policy enforcer
 * Make policy debug logging less verbose
@@ -385,19 +402,19 @@ CHANGES
 * Allow policy.json resource vs constant check
 * Replaces use of urlutils with six in policy module
 * Utilizes assertIsNone and assertIsNotNone
-* Use hacking import_exceptions for gettextutils._
+* Use hacking import\_exceptions for gettextutils.\_
 * Use urlutils functions instead of urllib/urllib2
 * Remove vim header
-* Use six.string_type instead of basestring
+* Use six.string\_type instead of basestring
 * Apply six for metaclass
 * ConfigFileNotFoundError with proper argument
-* Keystone user can't perform revoke_token
-* Remove useless unit test codes in test_policy
+* Keystone user can't perform revoke\_token
+* Remove useless unit test codes in test\_policy
 * Replace using tests.utils part2
 * Bump hacking to 0.7.0
 * Fix wrong argument in openstack common policy
 * Fix missing argument bug in oslo common policy
-* Fix policy default_rule issue
+* Fix policy default\_rule issue
 * Allow use of hacking 0.6.0 and enable new checks
 * Fix missing argument bug in oslo common policy
 * Enable H302 hacking check
