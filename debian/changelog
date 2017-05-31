@@ -3,6 +3,7 @@ python-oslo.policy (1.23.0-0ubuntu1) UNRELEASED; urgency=medium
   * d/control: Update minimum pbr version to 2.0.0.
   * New upstream release.
   * d/control: Align (Build-)Depends with upstream.
+  * d/control: Add BD on python3-sphinx.
 
  -- James Page <james.page@ubuntu.com>  Wed, 31 May 2017 12:38:09 +0100
 
