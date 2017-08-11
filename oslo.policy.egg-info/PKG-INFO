@@ -1,8 +1,8 @@
 Metadata-Version: 1.1
 Name: oslo.policy
-Version: 1.23.0
+Version: 1.25.1
 Summary: Oslo Policy library
-Home-page: http://docs.openstack.org/developer/oslo.policy/
+Home-page: https://docs.openstack.org/oslo.policy/latest/
 Author: OpenStack
 Author-email: openstack-dev@lists.openstack.org
 License: UNKNOWN
@@ -31,7 +31,7 @@ Description: ========================
         all OpenStack services.
         
         * Free software: Apache license
-        * Documentation: https://docs.openstack.org/developer/oslo.policy
+        * Documentation: https://docs.openstack.org/oslo.policy/latest/
         * Source: https://git.openstack.org/cgit/openstack/oslo.policy
         * Bugs: https://bugs.launchpad.net/oslo.policy
         
