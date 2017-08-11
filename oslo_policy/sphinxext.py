@@ -43,38 +43,34 @@ def _format_policy_rule(rule):
     For example:
 
         ``os_compute_api:servers:create``
+            :Default: ``rule:admin_or_owner``
+            :Operations:
+              - **POST** ``/servers``
 
             Create a server
-
-            Default::
-
-                rule:admin_or_owner
-
-            Operations:
-
-            - **POST** ``/servers``
     """
     yield '``{}``'.format(rule.name)
+
+    if rule.check_str:
+        yield _indent(':Default: ``{}``'.format(rule.check_str))
+    else:
+        yield _indent(':Default: <empty string>')
+
+    if hasattr(rule, 'operations'):
+        yield _indent(':Operations:')
+        for operation in rule.operations:
+            yield _indent(_indent('- **{}** ``{}``'.format(
+                operation['method'], operation['path'])))
+
     yield ''
 
     if rule.description:
         for line in statemachine.string2lines(
                 rule.description, tab_width=4, convert_whitespace=True):
-            yield _indent(line)
-
-        yield ''
-
-    yield _indent('Default::')
-    yield ''
-    yield _indent(_indent(rule.check_str))
-
-    if hasattr(rule, 'operations'):
-        yield ''
-        yield _indent('Operations:')
-        yield ''
-        for operation in rule.operations:
-            yield _indent('- **{}** ``{}``'.format(operation['method'],
-                                                   operation['path']))
+            if line:
+                yield _indent(line)
+    else:
+        yield _indent('(no description provided)')
 
     yield ''
 
@@ -128,7 +124,9 @@ class ShowPolicyDirective(rst.Directive):
                 config_path = c
                 break
         else:
-            self.error('could not find config file in: %s' % str(candidates))
+            raise ValueError(
+                'could not find config file in: %s' % str(candidates)
+            )
 
         self.info('loading config file %s' % config_path)
 

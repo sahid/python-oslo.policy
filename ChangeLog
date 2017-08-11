@@ -1,6 +1,39 @@
 CHANGES
 =======
 
+1.25.1
+------
+
+* throw an exception when sphinxext cannot find the config file
+* fix formatting for empty defaults
+* Update UPPER\_CONSTRAINTS\_FILE for stable/pike
+* Update .gitreview for stable/pike
+
+1.25.0
+------
+
+* Updated from global requirements
+* Update URLs in documents according to document migration
+* Fix parsing bug when config file is empty
+
+1.24.1
+------
+
+* import configuration guide content from openstack-manuals repo
+* sphinxext: Use field lists in output
+* sphinxext: Format definition lists correctly
+* switch from oslosphinx to openstackdocstheme
+* move existing documentation into new standard layout
+
+1.24.0
+------
+
+* Updated from global requirements
+* Updated from global requirements
+* Updated from global requirements
+* Updated from global requirements
+* Updated from global requirements
+
 1.23.0
 ------
 
