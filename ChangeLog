@@ -1,13 +1,47 @@
 CHANGES
 =======
 
-1.25.1
+1.30.0
 ------
 
+* Imported Translations from Zanata
+* Add functionality to deprecate policies
+* Pass creds as a dict in tests
+
+1.29.0
+------
+
+* Documentation and release notes for plugins
+* Imported Translations from Zanata
+* http/https check rules as stevedore extensions
+* External Policy hook should support SSL
+
+1.28.1
+------
+
+* Modification to add additional information in the HTTPCheck request
+
+1.28.0
+------
+
+* Updated from global requirements
+* rewrite HttpCheckFixture to not mock out entire HttpCheck class
+
+1.27.0
+------
+
+* Updated from global requirements
+* Add JSON output option to sample generator
+
+1.26.0
+------
+
+* Imported Translations from Zanata
+* Updated from global requirements
 * throw an exception when sphinxext cannot find the config file
+* Update reno for stable/pike
 * fix formatting for empty defaults
-* Update UPPER\_CONSTRAINTS\_FILE for stable/pike
-* Update .gitreview for stable/pike
+* Updated from global requirements
 
 1.25.0
 ------
