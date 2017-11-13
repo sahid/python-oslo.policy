@@ -17,15 +17,68 @@
 
 import abc
 import ast
-import contextlib
-import copy
+import inspect
 
-from oslo_serialization import jsonutils
-import requests
 import six
-
+import stevedore
 
 registered_checks = {}
+extension_checks = None
+
+
+def get_extensions():
+    global extension_checks
+    if extension_checks is None:
+        em = stevedore.ExtensionManager('oslo.policy.rule_checks',
+                                        invoke_on_load=False)
+        extension_checks = {
+            extension.name: extension.plugin
+            for extension in em
+        }
+    return extension_checks
+
+
+def _check(rule, target, creds, enforcer, current_rule):
+    """Evaluate the rule.
+
+    This private method is meant to be used by the enforcer to call
+    the rule. It can also be used by built-in checks that have nested
+    rules.
+
+    We use a private function because it makes it easier to change the
+    API without having an impact on subclasses not defined within the
+    oslo.policy library.
+
+    We don't put this logic in Enforcer.enforce() and invoke that
+    method recursively because that changes the BaseCheck API to
+    require that the enforcer argument to __call__() be a valid
+    Enforcer instance (as evidenced by all of the breaking unit
+    tests).
+
+    We don't put this in a private method of BaseCheck because that
+    propagates the problem of extending the list of arguments to
+    __call__() if subclasses change the implementation of the
+    function.
+
+    :param rule: A check object.
+    :type rule: BaseCheck
+    :param target: Attributes of the object of the operation.
+    :type target: dict
+    :param creds: Attributes of the user performing the operation.
+    :type creds: dict
+    :param enforcer: The Enforcer being used.
+    :type enforcer: Enforcer
+    :param current_rule: The name of the policy being checked.
+    :type current_rule: str
+
+    """
+    # Evaluate the rule
+    argspec = inspect.getargspec(rule.__call__)
+    rule_args = [target, creds, enforcer]
+    # Check if the rule argument must be included or not
+    if len(argspec.args) > 4:
+        rule_args.append(current_rule)
+    return rule(*rule_args)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -39,7 +92,7 @@ class BaseCheck(object):
         pass
 
     @abc.abstractmethod
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Triggers if instance of the class is called.
 
         Performs the check. Returns False to reject the access or a
@@ -57,7 +110,7 @@ class FalseCheck(BaseCheck):
 
         return '!'
 
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Check the policy."""
 
         return False
@@ -71,7 +124,7 @@ class TrueCheck(BaseCheck):
 
         return '@'
 
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Check the policy."""
 
         return True
@@ -97,13 +150,13 @@ class NotCheck(BaseCheck):
 
         return 'not %s' % self.rule
 
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Check the policy.
 
         Returns the logical inverse of the wrapped check.
         """
 
-        return not self.rule(target, cred, enforcer)
+        return not _check(self.rule, target, cred, enforcer, current_rule)
 
 
 class AndCheck(BaseCheck):
@@ -115,14 +168,14 @@ class AndCheck(BaseCheck):
 
         return '(%s)' % ' and '.join(str(r) for r in self.rules)
 
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Check the policy.
 
         Requires that all rules accept in order to return True.
         """
 
         for rule in self.rules:
-            if not rule(target, cred, enforcer):
+            if not _check(rule, target, cred, enforcer, current_rule):
                 return False
 
         return True
@@ -150,14 +203,14 @@ class OrCheck(BaseCheck):
 
         return '(%s)' % ' or '.join(str(r) for r in self.rules)
 
-    def __call__(self, target, cred, enforcer):
+    def __call__(self, target, cred, enforcer, current_rule=None):
         """Check the policy.
 
         Requires that at least one rule accept in order to return True.
         """
 
         for rule in self.rules:
-            if rule(target, cred, enforcer):
+            if _check(rule, target, cred, enforcer, current_rule):
                 return True
         return False
 
@@ -199,9 +252,15 @@ def register(name, func=None):
 
 @register('rule')
 class RuleCheck(Check):
-    def __call__(self, target, creds, enforcer):
+    def __call__(self, target, creds, enforcer, current_rule=None):
         try:
-            return enforcer.rules[self.match](target, creds, enforcer)
+            return _check(
+                rule=enforcer.rules[self.match],
+                target=target,
+                creds=creds,
+                enforcer=enforcer,
+                current_rule=current_rule,
+            )
         except KeyError:
             # We don't have any matching rule; fail closed
             return False
@@ -211,7 +270,7 @@ class RuleCheck(Check):
 class RoleCheck(Check):
     """Check that there is a matching role in the ``creds`` dict."""
 
-    def __call__(self, target, creds, enforcer):
+    def __call__(self, target, creds, enforcer, current_rule=None):
         try:
             match = self.match % target
         except KeyError:
@@ -221,31 +280,6 @@ class RoleCheck(Check):
         if 'roles' in creds:
             return match.lower() in [x.lower() for x in creds['roles']]
         return False
-
-
-@register('http')
-class HttpCheck(Check):
-    """Check ``http:`` rules by calling to a remote server.
-
-    This example implementation simply verifies that the response
-    is exactly ``True``.
-    """
-
-    def __call__(self, target, creds, enforcer):
-        url = ('http:' + self.match) % target
-
-        # Convert instances of object() in target temporarily to
-        # empty dict to avoid circular reference detection
-        # errors in jsonutils.dumps().
-        temp_target = copy.deepcopy(target)
-        for key in target.keys():
-            element = target.get(key)
-            if type(element) is object:
-                temp_target[key] = {}
-        data = {'target': jsonutils.dumps(temp_target),
-                'credentials': jsonutils.dumps(creds)}
-        with contextlib.closing(requests.post(url, data=data)) as r:
-            return r.text == 'True'
 
 
 @register(None)
@@ -291,7 +325,7 @@ class GenericCheck(Check):
         else:
             return self._find_in_dict(test_value, path_segments, match)
 
-    def __call__(self, target, creds, enforcer):
+    def __call__(self, target, creds, enforcer, current_rule=None):
 
         try:
             match = self.match % target
