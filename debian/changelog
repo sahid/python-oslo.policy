@@ -2,6 +2,7 @@ python-oslo.policy (1.30.0-0ubuntu1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * d/control: Align (Build-)Depends with upstream.
+  * d/p/*: Refresh.
 
  -- James Page <james.page@ubuntu.com>  Mon, 13 Nov 2017 16:41:39 +0000
 

@@ -6,16 +6,16 @@ Last-Update: 2017-08-11
 
 --- a/doc/source/conf.py
 +++ b/doc/source/conf.py
-@@ -23,7 +23,7 @@
- extensions = [
+@@ -24,7 +24,7 @@ extensions = [
      'sphinx.ext.autodoc',
+     'sphinx.ext.extlinks',
      #'sphinx.ext.intersphinx',
 -    'openstackdocstheme',
 +    #'openstackdocstheme',
      'oslo_config.sphinxext',
  ]
  
-@@ -71,7 +71,7 @@
+@@ -73,7 +73,7 @@ modindex_common_prefix = ['oslo_policy.'
  # html_theme_path = ["."]
  # html_theme = '_theme'
  # html_static_path = ['static']
