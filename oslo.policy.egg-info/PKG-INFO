@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: oslo.policy
-Version: 1.30.0
+Version: 1.32.0
 Summary: Oslo Policy library
 Home-page: https://docs.openstack.org/oslo.policy/latest/
 Author: OpenStack

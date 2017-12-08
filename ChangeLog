@@ -1,6 +1,20 @@
 CHANGES
 =======
 
+1.32.0
+------
+
+* Add scope\_types to RuleDefault objects
+
+1.31.0
+------
+
+* Remove -U from pip install
+* Avoid tox\_install.sh for constraints support
+* Updated from global requirements
+* Remove setting of version/release from releasenotes
+* Updated from global requirements
+
 1.30.0
 ------
 
