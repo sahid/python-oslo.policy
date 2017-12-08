@@ -2,6 +2,7 @@ python-oslo.policy (1.32.0-0ubuntu1) UNRELEASED; urgency=medium
 
   * New upstream release for OpenStack Queens
   * d/control: Align (Build-)Depends with upstream.
+  * d/control: Bumped Standards-Version to 4.1.2.
 
  -- James Page <james.page@ubuntu.com>  Fri, 08 Dec 2017 10:06:33 +0000
 
