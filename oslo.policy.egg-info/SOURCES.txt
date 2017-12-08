@@ -79,4 +79,3 @@ releasenotes/source/locale/en_GB/LC_MESSAGES/releasenotes.po
 releasenotes/source/locale/fr/LC_MESSAGES/releasenotes.po
 sample_data/auth_v3_token_admin.json
 sample_data/auth_v3_token_member.json
-tools/tox_install.sh
