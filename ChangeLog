@@ -1,6 +1,22 @@
 CHANGES
 =======
 
+1.33.0
+------
+
+* Add a release note for enforce\_scope
+* Add configuration option for enforcing scope
+
+1.32.2
+------
+
+* Fix string injection for InvalidScope
+
+1.32.1
+------
+
+* Imported Translations from Zanata
+
 1.32.0
 ------
 
@@ -11,7 +27,9 @@ CHANGES
 
 * Remove -U from pip install
 * Avoid tox\_install.sh for constraints support
+* add bandit to pep8 job
 * Updated from global requirements
+* Handle deprecation of inspect.getargspec
 * Remove setting of version/release from releasenotes
 * Updated from global requirements
 
@@ -26,6 +44,7 @@ CHANGES
 ------
 
 * Documentation and release notes for plugins
+* expand type documentation for Enforcer arguments
 * Imported Translations from Zanata
 * http/https check rules as stevedore extensions
 * External Policy hook should support SSL
