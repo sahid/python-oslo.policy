@@ -1,3 +1,9 @@
+python-oslo.policy (1.33.0-0ubuntu1) UNRELEASED; urgency=medium
+
+  * New upstream release for OpenStack Queens.
+
+ -- James Page <james.page@ubuntu.com>  Wed, 03 Jan 2018 11:31:26 +0000
+
 python-oslo.policy (1.32.0-0ubuntu1) bionic; urgency=medium
 
   * New upstream release for OpenStack Queens
