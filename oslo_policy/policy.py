@@ -306,7 +306,7 @@ class InvalidScope(Exception):
 
     def __init__(self, rule, operation_scopes, token_scope):
         msg = (
-            "(rule)s requires a scope of %(operation_scopes)s, request "
+            "%(rule)s requires a scope of %(operation_scopes)s, request "
             "was made with %(token_scope)s scope." % {
                 'rule': rule,
                 'operation_scopes': operation_scopes,
@@ -777,13 +777,17 @@ class Enforcer(object):
         raise cfg.ConfigFilesNotFoundError((path,))
 
     def enforce(self, rule, target, creds, do_raise=False, exc=None,
-                enforce_scope=True, *args, **kwargs):
+                *args, **kwargs):
         """Checks authorization of a rule against the target and credentials.
 
         :param rule: The rule to evaluate.
         :type rule: string or :class:`BaseCheck`
-        :param dict target: As much information about the object being operated
-                            on as possible.
+        :param dict target: As much information about the object being
+                            operated on as possible. The target
+                            argument should be a dict instance or an
+                            instance of a class that fully supports
+                            the Mapping abstract base class and deep
+                            copying.
         :param dict creds: As much information about the user performing the
                            action as possible.
         :param do_raise: Whether to raise an exception or not if check
@@ -793,12 +797,6 @@ class Enforcer(object):
                     positional and keyword arguments) will be passed to
                     the exception class. If not specified,
                     :class:`PolicyNotAuthorized` will be used.
-        :param enforce_scope: A boolean value denoting if an exception should
-                              be raised in the event the operation requires a
-                              different scope from the one in the request (e.g.
-                              using a project-scope token to do something
-                              system-wide). If False, a warning will be logged
-                              with details of the scope failure.
 
         :return: ``False`` if the policy does not allow the action and `exc` is
                  not provided; otherwise, returns a value that evaluates to
@@ -846,7 +844,7 @@ class Enforcer(object):
                 registered_rule = self.registered_rules.get(rule)
                 if registered_rule and registered_rule.scope_types:
                     if token_scope not in registered_rule.scope_types:
-                        if enforce_scope:
+                        if self.conf.oslo_policy.enforce_scope:
                             raise InvalidScope(
                                 rule, registered_rule.scope_types, token_scope
                             )
