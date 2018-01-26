@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+1.33.1
+------
+
+* Only log deprecation warnings when they are overridden
+
 1.33.0
 ------
 
