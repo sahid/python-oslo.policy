@@ -1,3 +1,34 @@
+python-oslo.policy (1.33.1-3ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian unstable.  Remaining changes:
+    - d/watch: Use upstream release tarballs.
+    - Update Vcs-* fields.
+    - Enable autopkgtest-pkg-python testsuite.
+
+ -- Ubuntu Merge-o-Matic <mom@ubuntu.com>  Mon, 12 Mar 2018 04:19:46 +0000
+
+python-oslo.policy (1.33.1-3) unstable; urgency=medium
+
+  * Python 3 has now priority over Python 2.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 11 Mar 2018 20:10:57 +0000
+
+python-oslo.policy (1.33.1-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 25 Feb 2018 21:25:38 +0000
+
+python-oslo.policy (1.33.1-1) experimental; urgency=medium
+
+  * Set VCS URLs to point to salsa.
+  * New upstream release.
+  * Fixed (build-)depends for this release.
+  * Using pkgos-dh_auto_test.
+  * Standards-Version is now 4.1.3.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 11 Feb 2018 11:13:08 +0000
+
 python-oslo.policy (1.33.1-0ubuntu1) bionic; urgency=medium
 
   * New upstream release for OpenStack Queens.
@@ -26,6 +57,48 @@ python-oslo.policy (1.30.0-0ubuntu1) bionic; urgency=medium
   * d/p/*: Refresh.
 
  -- James Page <james.page@ubuntu.com>  Mon, 13 Nov 2017 16:46:37 +0000
+
+python-oslo.policy (1.25.1-3) unstable; urgency=medium
+
+  * Added build-depends on python3-sphinx (Closes: #880845).
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 05 Nov 2017 12:44:17 +0000
+
+python-oslo.policy (1.25.1-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+  * Adds python{3,}-oslosphinx as build-depends (Closes: #880396).
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 31 Oct 2017 09:35:06 +0000
+
+python-oslo.policy (1.25.1-1) experimental; urgency=medium
+
+  [ Ondřej Nový ]
+  * Standards-Version is 3.9.8 now (no change)
+  * d/rules: Changed UPSTREAM_GIT protocol to https
+  * d/copyright: Changed source URL to https protocol
+
+  [ Daniel Baumann ]
+  * Updating vcs fields.
+  * Updating copyright format url.
+  * Running wrap-and-sort -bast.
+  * Updating maintainer field.
+  * Updating standards version to 4.0.0.
+  * Removing gbp.conf, not used anymore or should be specified in the
+    developers dotfiles.
+  * Correcting permissions in debian packaging files.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+  * Fixed (build-)depends for this release.
+  * Removed now useless transition packages.
+  * Using pkgos-dh_auto_install.
+
+  [ Daniel Baumann ]
+  * Updating standards version to 4.0.1.
+  * Updating standards version to 4.1.0.
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 05 Aug 2017 17:49:38 +0200
 
 python-oslo.policy (1.25.1-0ubuntu1) artful; urgency=medium
 
@@ -216,3 +289,4 @@ python-oslo.policy (0.3.2-1) unstable; urgency=medium
   * Initial release. (Closes: #780593)
 
  -- Thomas Goirand <zigo@debian.org>  Sun, 08 Mar 2015 23:32:30 +0100
+

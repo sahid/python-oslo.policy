@@ -6,47 +6,45 @@ XSBC-Original-Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org
 Uploaders:
  Thomas Goirand <zigo@debian.org>,
  Ivan Udovichenko <iudovichenko@mirantis.com>,
- Corey Bryant <corey.bryant@canonical.com>,
- David Della Vecchia <ddv@canonical.com>,
 Build-Depends:
  debhelper (>= 9),
  dh-python,
- openstack-pkg-tools (>= 52~),
+ openstack-pkg-tools,
  python-all,
  python-pbr (>= 2.0.0),
  python-setuptools,
- python-sphinx (>= 1.5.1),
+ python-sphinx (>= 1.6.2),
  python3-all,
  python3-pbr (>= 2.0.0),
  python3-setuptools,
- python3-sphinx (>= 1.5.1),
+ python3-sphinx,
 Build-Depends-Indep:
- python-coverage (>= 4.0),
+ python-coverage,
+ python-hacking,
  python-openstackdocstheme (>= 1.17.0),
  python-oslo.config (>= 1:5.1.0),
  python-oslo.i18n (>= 3.15.3),
  python-oslo.serialization (>= 2.18.0),
- python-oslotest (>= 1.10.0),
+ python-oslosphinx,
+ python-oslotest,
  python-requests (>= 2.14.2),
  python-requests-mock (>= 1.1),
- python-six (>= 1.10.0),
+ python-six,
  python-stevedore (>= 1.20.0),
- python-yaml (>= 3.10.0),
- python3-coverage (>= 4.0),
- python3-openstackdocstheme (>= 1.17.0),
+ python-yaml,
  python3-oslo.config (>= 1:5.1.0),
  python3-oslo.i18n (>= 3.15.3),
  python3-oslo.serialization (>= 2.18.0),
- python3-oslotest (>= 1.10.0),
+ python3-oslosphinx,
+ python3-oslotest,
  python3-requests (>= 2.14.2),
  python3-requests-mock (>= 1.1),
- python3-six (>= 1.10.0),
+ python3-six,
  python3-stevedore (>= 1.20.0),
- python3-subunit (>= 1.0.0),
- python3-yaml (>= 3.10.0),
+ python3-yaml,
  subunit,
  testrepository,
-Standards-Version: 4.1.2
+Standards-Version: 4.1.3
 Vcs-Browser: https://git.launchpad.net/~ubuntu-server-dev/ubuntu/+source/python-oslo.policy
 Vcs-Git: git://git.launchpad.net/~ubuntu-server-dev/ubuntu/+source/python-oslo.policy
 Homepage: https://github.com/openstack/oslo.policy
@@ -59,17 +57,13 @@ Depends:
  python-oslo.i18n (>= 3.15.3),
  python-oslo.serialization (>= 2.18.0),
  python-requests (>= 2.14.2),
- python-six (>= 1.10.0),
+ python-six,
  python-stevedore (>= 1.20.0),
- python-yaml (>= 3.10.0),
+ python-yaml,
  ${misc:Depends},
  ${python:Depends},
 Suggests:
  python-oslo.policy-doc,
-Breaks:
- python-oslo-policy (<< 0.5.0-1~),
-Replaces:
- python-oslo-policy (<< 0.5.0-1~),
 Description: RBAC policy enforcement library for OpenStack - Python 2.x
  Oslo.policy provides a Role Based Access Control policy enforcement library
  for OpenStack.
@@ -95,17 +89,13 @@ Depends:
  python3-oslo.i18n (>= 3.15.3),
  python3-oslo.serialization (>= 2.18.0),
  python3-requests (>= 2.14.2),
- python3-six (>= 1.10.0),
+ python3-six,
  python3-stevedore (>= 1.20.0),
- python3-yaml (>= 3.10.0),
+ python3-yaml,
  ${misc:Depends},
  ${python3:Depends},
 Suggests:
  python-oslo.policy-doc,
-Breaks:
- python3-oslo-policy (<< 0.5.0-1~),
-Replaces:
- python3-oslo-policy (<< 0.5.0-1~),
 Description: RBAC policy enforcement library for OpenStack - Python 3.x
  Oslo.policy provides a Role Based Access Control policy enforcement library
  for OpenStack.
