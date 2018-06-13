@@ -1,11 +1,15 @@
-python-oslo.policy (1.33.1-3ubuntu1) UNRELEASED; urgency=low
+python-oslo.policy (1.37.0-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Ubuntu Merge-o-Matic ]
   * Merge from Debian unstable.  Remaining changes:
     - d/watch: Use upstream release tarballs.
     - Update Vcs-* fields.
     - Enable autopkgtest-pkg-python testsuite.
 
- -- Ubuntu Merge-o-Matic <mom@ubuntu.com>  Mon, 12 Mar 2018 04:19:46 +0000
+  [ James Page ]
+  * New upstream release for OpenStack Rocky.
+
+ -- James Page <james.page@ubuntu.com>  Wed, 13 Jun 2018 10:11:49 +0100
 
 python-oslo.policy (1.33.1-3) unstable; urgency=medium
 
