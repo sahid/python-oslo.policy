@@ -1,6 +1,44 @@
 CHANGES
 =======
 
+1.37.0
+------
+
+* Remove erroneous newline in sample generation
+* Update sphinxext to include scope\_types in docs
+
+1.36.0
+------
+
+* Fix document formatting
+* Include deprecated\_reason when deprecated\_rule is set
+* Include both new and deprecated rules in generated sample
+
+1.35.0
+------
+
+* Remove stale pip-missing-reqs tox test
+* make the sphinxpolicygen extension handle multiple input/output files
+* Update documentation to include usage for new projects
+* Trivial: Update pypi url to new url
+* set default python to python3
+* add lower-constraints job
+* Updated from global requirements
+* Update links in README
+
+1.34.0
+------
+
+* Imported Translations from Zanata
+* Imported Translations from Zanata
+* Update reno for stable/queens
+* Updated from global requirements
+* Imported Translations from Zanata
+* Updated from global requirements
+* Render deprecated policy names when generating files
+* Updated from global requirements
+* Updated from global requirements
+
 1.33.1
 ------
 

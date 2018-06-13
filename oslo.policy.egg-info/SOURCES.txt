@@ -1,6 +1,7 @@
 .coveragerc
 .mailmap
 .testr.conf
+.zuul.yaml
 AUTHORS
 CONTRIBUTING.rst
 ChangeLog
@@ -8,6 +9,7 @@ HACKING.rst
 LICENSE
 README.rst
 babel.cfg
+lower-constraints.txt
 requirements.txt
 setup.cfg
 setup.py
@@ -63,16 +65,19 @@ oslo_policy/tests/test_policy.py
 oslo_policy/tests/test_sphinxext.py
 oslo_policy/tests/test_sphinxpolicygen.py
 oslo_policy/tests/token_fixture.py
+releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml
 releasenotes/notes/add-sphinxpolicygen-39e2f8fa24930b0c.yaml
 releasenotes/notes/add_custom_rule_check_plugins-3c15c2c7ca5e.yaml
 releasenotes/notes/add_reno-3b4ae0789e9c45b4.yaml
 releasenotes/notes/enforce_scope_types-1e92f6a34e4173ef.yaml
+releasenotes/notes/fix-rendering-for-deprecated-rules-d465292e4155f483.yaml
 releasenotes/notes/oslo-policy-descriptive-support-3ee688c5fa48d751.yaml
 releasenotes/source/conf.py
 releasenotes/source/index.rst
 releasenotes/source/newton.rst
 releasenotes/source/ocata.rst
 releasenotes/source/pike.rst
+releasenotes/source/queens.rst
 releasenotes/source/unreleased.rst
 releasenotes/source/_static/.placeholder
 releasenotes/source/_templates/.placeholder

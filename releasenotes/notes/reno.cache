@@ -1,0 +1,27 @@
+---
+file-contents:
+  releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml:
+    fixes: ['[`bug 1773473 <https://bugs.launchpad.net/oslo.policy/+bug/1773473>`_]
+
+        The ``sphinxext`` extension for rendering policy documentation now supports
+
+        ``scope_types`` attributes.
+
+        ']
+  releasenotes/notes/fix-rendering-for-deprecated-rules-d465292e4155f483.yaml:
+    fixes: ['[`bug 1771442 <https://bugs.launchpad.net/oslo.policy/+bug/1771442>`_]
+
+        Policy rules that are deprecated for removal are now properly formatted
+
+        when rendering sample policy files for documentation.
+
+        ']
+notes:
+- files:
+  - - releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml
+    - !!binary |
+      ZWIxNTQ2ZmRmYzE1N2ViY2UwZDUyY2JlZTU0ZTI4OThkMTNkZTI0NQ==
+  - - releasenotes/notes/fix-rendering-for-deprecated-rules-d465292e4155f483.yaml
+    - !!binary |
+      MGYzMTkzOGRkNzIwMDE1NDQ0ZTAzZjAwNTZjMGNmYzBlNGI4ZTkzMg==
+  version: 1.37.0
