@@ -1,0 +1,3 @@
+Tests: python-import, python-ostestr
+Depends: @, @builddeps@, python3-os-testr
+Restrictions: allow-stderr, needs-recommends

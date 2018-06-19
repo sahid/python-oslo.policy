@@ -1,3 +1,11 @@
+python-oslo.policy (1.37.0-0ubuntu2) UNRELEASED; urgency=medium
+
+  * d/tests/*,d/control: Add autopkgtests to exercise import and unit
+    tests as part of Ubuntu CI, resolving current failures.
+  * d/control: Switch to python3-sphinx for doc build.
+
+ -- James Page <james.page@ubuntu.com>  Tue, 19 Jun 2018 09:18:54 +0100
+
 python-oslo.policy (1.37.0-0ubuntu1) cosmic; urgency=low
 
   [ Ubuntu Merge-o-Matic ]
