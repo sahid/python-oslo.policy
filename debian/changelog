@@ -1,3 +1,9 @@
+python-oslo.policy (1.38.1-0ubuntu1) UNRELEASED; urgency=medium
+
+  * New upstream release for OpenStack Rocky.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Wed, 25 Jul 2018 16:17:37 -0400
+
 python-oslo.policy (1.37.0-0ubuntu2) cosmic; urgency=medium
 
   * d/tests/*,d/control: Add autopkgtests to exercise import and unit
