@@ -1,9 +1,25 @@
 CHANGES
 =======
 
+1.38.1
+------
+
+* Avoid redundant policy syntax checks
+
+1.38.0
+------
+
+* Teach Enforcer.enforce to deal with context objects
+* Pass dictionary as creds in policy tests
+* Fix requirements and convert to stestr
+* Add blueprints and releasenotes link to README
+* fix tox python3 overrides
+
 1.37.0
 ------
 
+* Add CLI usage documentation
+* Clarify CLI documentation
 * Remove erroneous newline in sample generation
 * Update sphinxext to include scope\_types in docs
 
@@ -11,8 +27,10 @@ CHANGES
 ------
 
 * Fix document formatting
+* Add examples and clarification around scope\_types
 * Include deprecated\_reason when deprecated\_rule is set
 * Include both new and deprecated rules in generated sample
+* trivial: Fix file permissions
 
 1.35.0
 ------

@@ -221,12 +221,14 @@ by setting the ``policy_default_rule`` configuration setting to the
 desired rule name.
 """
 
+import collections
 import copy
 import logging
 import os
 import warnings
 
 from oslo_config import cfg
+from oslo_context import context
 from oslo_serialization import jsonutils
 import six
 import yaml
@@ -340,6 +342,13 @@ class InvalidRuleDefault(Exception):
         msg = (_('Invalid policy rule default: '
                  '%(error)s.') % {'error': error})
         super(InvalidRuleDefault, self).__init__(msg)
+
+
+class InvalidContextObject(Exception):
+    def __init__(self, error):
+        msg = (_('Invalid context object: '
+                 '%(error)s.') % {'error': error})
+        super(InvalidContextObject, self).__init__(msg)
 
 
 def parse_file_contents(data):
@@ -487,6 +496,7 @@ class Enforcer(object):
 
         self.policy_file = policy_file or self.conf.oslo_policy.policy_file
         self.use_conf = use_conf
+        self._need_check_rule = True
         self.overwrite = overwrite
         self._loaded_files = []
         self._policy_dir_mtimes = {}
@@ -506,6 +516,7 @@ class Enforcer(object):
             raise TypeError(_('Rules must be an instance of dict or Rules, '
                             'got %s instead') % type(rules))
         self.use_conf = use_conf
+        self._need_check_rule = True
         if overwrite:
             self.rules = Rules(rules, self.default_rule)
         else:
@@ -627,7 +638,9 @@ class Enforcer(object):
                     self.rules[default.name] = default.check
 
             # Detect and log obvious incorrect rule definitions
-            self.check_rules()
+            if self._need_check_rule:
+                self.check_rules()
+                self._need_check_rule = False
 
     def check_rules(self, raise_on_violation=False):
         """Look for rule definitions that are obviously incorrect."""
@@ -789,7 +802,8 @@ class Enforcer(object):
                             the Mapping abstract base class and deep
                             copying.
         :param dict creds: As much information about the user performing the
-                           action as possible.
+                           action as possible. This parameter can also be an
+                           instance of ``oslo_context.context.RequestContext``.
         :param do_raise: Whether to raise an exception or not if check
                         fails.
         :param exc: Class of the exception to raise if the check fails.
@@ -806,6 +820,23 @@ class Enforcer(object):
         """
 
         self.load_rules()
+
+        if isinstance(creds, context.RequestContext):
+            creds = self._map_context_attributes_into_creds(creds)
+        # NOTE(lbragstad): The oslo.context library exposes the ability to call
+        # a method on RequestContext objects that converts attributes of the
+        # context object to policy values. However, ``to_policy_values()``
+        # doesn't actually return a dictionary, it's a subclass of
+        # collections.MutableMapping, which behaves like a dictionary but
+        # doesn't pass the type check.
+        elif not isinstance(creds, collections.MutableMapping):
+            msg = (
+                'Expected type oslo_context.context.RequestContext, dict, or  '
+                'the output of '
+                'oslo_context.context.RequestContext.to_policy_values but '
+                'got %(creds_type)s instead' % {'creds_type': type(creds)}
+            )
+            raise InvalidContextObject(msg)
 
         # Allow the rule to be a Check tree
         if isinstance(rule, _checks.BaseCheck):
@@ -880,6 +911,27 @@ class Enforcer(object):
             raise PolicyNotAuthorized(rule, target, creds)
 
         return result
+
+    def _map_context_attributes_into_creds(self, context):
+        creds = {}
+        # port public context attributes into the creds dictionary so long as
+        # the attribute isn't callable
+        context_values = context.to_policy_values()
+        for k, v in context_values.items():
+            creds[k] = v
+
+        # NOTE(lbragstad): We unfortunately have to special case this
+        # attribute. Originally when the system scope when into oslo.policy, we
+        # checked for a key called 'system' in creds. The oslo.context library
+        # uses `system_scope` instead, and the compatibility between
+        # oslo.policy and oslo.context was an afterthought. We'll have to
+        # support services who've been setting creds['system'], but we can do
+        # that by making sure we populate it with what's in the context object
+        # if it has a system_scope attribute.
+        if context.system_scope:
+            creds['system'] = context.system_scope
+
+        return creds
 
     def register_default(self, default):
         """Registers a RuleDefault.

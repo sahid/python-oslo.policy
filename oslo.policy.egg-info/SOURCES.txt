@@ -1,6 +1,6 @@
 .coveragerc
 .mailmap
-.testr.conf
+.stestr.conf
 .zuul.yaml
 AUTHORS
 CONTRIBUTING.rst
@@ -69,9 +69,12 @@ releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml
 releasenotes/notes/add-sphinxpolicygen-39e2f8fa24930b0c.yaml
 releasenotes/notes/add_custom_rule_check_plugins-3c15c2c7ca5e.yaml
 releasenotes/notes/add_reno-3b4ae0789e9c45b4.yaml
+releasenotes/notes/bug-1779172-c1323c0f647bc44c.yaml
 releasenotes/notes/enforce_scope_types-1e92f6a34e4173ef.yaml
+releasenotes/notes/expand-cli-docs-02c2f13adbe251c0.yaml
 releasenotes/notes/fix-rendering-for-deprecated-rules-d465292e4155f483.yaml
 releasenotes/notes/oslo-policy-descriptive-support-3ee688c5fa48d751.yaml
+releasenotes/notes/policy-check-performance-fbad83c7a4afd7d7.yaml
 releasenotes/source/conf.py
 releasenotes/source/index.rst
 releasenotes/source/newton.rst

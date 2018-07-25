@@ -19,6 +19,7 @@ import os
 
 import mock
 from oslo_config import cfg
+from oslo_context import context
 from oslo_serialization import jsonutils
 from oslotest import base as test_base
 import six
@@ -390,6 +391,66 @@ class EnforcerTest(base.PolicyBaseTestCase):
                                group='oslo_policy')
         self.assertRaises(ValueError, self.enforcer.load_rules, True)
 
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_rules_twice(self, mock_check_rules):
+        self.enforcer.load_rules()
+        self.enforcer.load_rules()
+        self.assertEqual(1, mock_check_rules.call_count)
+
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_rules_twice_force(self, mock_check_rules):
+        self.enforcer.load_rules(True)
+        self.enforcer.load_rules(True)
+        self.assertEqual(2, mock_check_rules.call_count)
+
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_rules_twice_clear(self, mock_check_rules):
+        self.enforcer.load_rules()
+        self.enforcer.clear()
+        # NOTE(bnemec): It's weird that we have to pass True here, but clear
+        # sets enforcer.use_conf to False, which causes load_rules to be a
+        # noop when called with no parameters.  This is probably a bug.
+        self.enforcer.load_rules(True)
+        self.assertEqual(2, mock_check_rules.call_count)
+
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_directory_twice(self, mock_check_rules):
+        self.create_config_file(
+            os.path.join('policy.d', 'a.conf'), POLICY_A_CONTENTS)
+        self.create_config_file(
+            os.path.join('policy.d', 'b.conf'), POLICY_B_CONTENTS)
+        self.enforcer.load_rules()
+        self.enforcer.load_rules()
+        self.assertEqual(1, mock_check_rules.call_count)
+        self.assertIsNotNone(self.enforcer.rules)
+
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_directory_twice_force(self, mock_check_rules):
+        self.create_config_file(
+            os.path.join('policy.d', 'a.conf'), POLICY_A_CONTENTS)
+        self.create_config_file(
+            os.path.join('policy.d', 'b.conf'), POLICY_B_CONTENTS)
+        self.enforcer.load_rules(True)
+        self.enforcer.load_rules(True)
+        self.assertEqual(2, mock_check_rules.call_count)
+        self.assertIsNotNone(self.enforcer.rules)
+
+    @mock.patch('oslo_policy.policy.Enforcer.check_rules')
+    def test_load_directory_twice_changed(self, mock_check_rules):
+        self.create_config_file(
+            os.path.join('policy.d', 'a.conf'), POLICY_A_CONTENTS)
+        self.enforcer.load_rules()
+
+        # Touch the file
+        conf_path = os.path.join(self.config_dir, os.path.join(
+            'policy.d', 'a.conf'))
+        stinfo = os.stat(conf_path)
+        os.utime(conf_path, (stinfo.st_atime + 10, stinfo.st_mtime + 10))
+
+        self.enforcer.load_rules()
+        self.assertEqual(2, mock_check_rules.call_count)
+        self.assertIsNotNone(self.enforcer.rules)
+
     def test_set_rules_type(self):
         self.assertRaises(TypeError,
                           self.enforcer.set_rules,
@@ -646,6 +707,89 @@ class EnforcerTest(base.PolicyBaseTestCase):
                           self.enforcer.authorize, 'test', {},
                           {'roles': ['test']})
 
+    def test_enforcer_accepts_context_objects(self):
+        rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
+        self.enforcer.register_default(rule)
+
+        request_context = context.RequestContext()
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, request_context)
+
+    def test_enforcer_accepts_subclassed_context_objects(self):
+        rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
+        self.enforcer.register_default(rule)
+
+        class SpecializedContext(context.RequestContext):
+            pass
+
+        request_context = SpecializedContext()
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, request_context)
+
+    def test_enforcer_rejects_non_context_objects(self):
+        rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
+        self.enforcer.register_default(rule)
+
+        class InvalidContext(object):
+            pass
+
+        request_context = InvalidContext()
+        target_dict = {}
+        self.assertRaises(
+            policy.InvalidContextObject, self.enforcer.enforce, 'fake_rule',
+            target_dict, request_context
+        )
+
+    @mock.patch.object(policy.Enforcer, '_map_context_attributes_into_creds')
+    def test_enforcer_call_map_context_attributes(self, map_mock):
+        rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
+        self.enforcer.register_default(rule)
+
+        request_context = context.RequestContext()
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, request_context)
+        map_mock.assert_called_once_with(request_context)
+
+    def test_enforcer_consolidates_context_attributes_with_creds(self):
+        request_context = context.RequestContext()
+        expected_creds = request_context.to_policy_values()
+
+        creds = self.enforcer._map_context_attributes_into_creds(
+            request_context
+        )
+
+        # We don't use self.assertDictEqual here because to_policy_values
+        # actaully returns a non-dict object that just behaves like a
+        # dictionary, but does some special handling when people access
+        # deprecated policy values.
+        for k, v in expected_creds.items():
+            self.assertEqual(expected_creds[k], creds[k])
+
+    def test_map_context_attributes_populated_system(self):
+        request_context = context.RequestContext(system_scope='all')
+        expected_creds = request_context.to_policy_values()
+        expected_creds['system'] = 'all'
+
+        creds = self.enforcer._map_context_attributes_into_creds(
+            request_context
+        )
+
+        # We don't use self.assertDictEqual here because to_policy_values
+        # actaully returns a non-dict object that just behaves like a
+        # dictionary, but does some special handling when people access
+        # deprecated policy values.
+        for k, v in expected_creds.items():
+            self.assertEqual(expected_creds[k], creds[k])
+
+    def test_enforcer_accepts_policy_values_from_context(self):
+        rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
+        self.enforcer.register_default(rule)
+
+        request_context = context.RequestContext()
+        policy_values = request_context.to_policy_values()
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, policy_values)
+
 
 class EnforcerNoPolicyFileTest(base.PolicyBaseTestCase):
     def setUp(self):
@@ -697,15 +841,17 @@ class CheckFunctionTestCase(base.PolicyBaseTestCase):
 
     def test_check_explicit(self):
         rule = base.FakeCheck()
-        result = self.enforcer.enforce(rule, 'target', 'creds')
-        self.assertEqual(('target', 'creds', self.enforcer), result)
+        creds = {}
+        result = self.enforcer.enforce(rule, 'target', creds)
+        self.assertEqual(('target', creds, self.enforcer), result)
 
     def test_check_no_rules(self):
         # Clear the policy.json file created in setUp()
         self.create_config_file('policy.json', "{}")
         self.enforcer.default_rule = None
         self.enforcer.load_rules()
-        result = self.enforcer.enforce('rule', 'target', 'creds')
+        creds = {}
+        result = self.enforcer.enforce('rule', 'target', creds)
         self.assertFalse(result)
 
     def test_check_with_rule(self):
@@ -722,7 +868,8 @@ class CheckFunctionTestCase(base.PolicyBaseTestCase):
         self.create_config_file('policy.json', jsonutils.dumps({"a_rule": []}))
         self.enforcer.default_rule = None
         self.enforcer.load_rules()
-        result = self.enforcer.enforce('rule', 'target', 'creds')
+        creds = {}
+        result = self.enforcer.enforce('rule', 'target', creds)
         self.assertFalse(result)
 
     def test_check_raise_default(self):

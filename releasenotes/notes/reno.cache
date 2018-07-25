@@ -8,6 +8,45 @@ file-contents:
         ``scope_types`` attributes.
 
         ']
+  releasenotes/notes/bug-1779172-c1323c0f647bc44c.yaml:
+    features: ['[`bug 1779172 <https://bugs.launchpad.net/keystone/+bug/1779172>`_]
+
+        The ``enforce()`` method now supports the ability to parse ``oslo.context``
+
+        objects if passed into ``enforce()`` as ``creds``. This provides more
+
+        consistent policy enforcement for service developers by ensuring the
+
+        attributes provided in policy enforcement are standardized. In this case
+
+        they are being standardized through the
+
+        ``oslo_context.context.RequestContext.to_policy_values()`` method.
+
+        ']
+    fixes: ['[`bug 1779172 <https://bugs.launchpad.net/keystone/+bug/1779172>`_]
+
+        The ``enforce()`` method now supports the ability to parse ``oslo.context``
+
+        objects if passed into ``enforce()`` as ``creds``. This provides more
+
+        consistent policy enforcement for service developers by ensuring the
+
+        attributes provided in policy enforcement are standardized. In this case
+
+        they are being standardized through the
+
+        ``oslo_context.context.RequestContext.to_policy_values()`` method.
+
+        ']
+  releasenotes/notes/expand-cli-docs-02c2f13adbe251c0.yaml:
+    fixes: ['[`bug 1741073 <https://bugs.launchpad.net/oslo.policy/+bug/1741073>`_]
+
+        Documentation has been improved to include ``oslopolicy-sample-generator``
+
+        and ``oslopolicy-list-redundant`` usage.
+
+        ']
   releasenotes/notes/fix-rendering-for-deprecated-rules-d465292e4155f483.yaml:
     fixes: ['[`bug 1771442 <https://bugs.launchpad.net/oslo.policy/+bug/1771442>`_]
 
@@ -16,7 +55,28 @@ file-contents:
         when rendering sample policy files for documentation.
 
         ']
+  releasenotes/notes/policy-check-performance-fbad83c7a4afd7d7.yaml:
+    fixes: ['As reported in launchpad bug 1723030, under some circumstances policy
+
+        checks caused a significant performance degradation. This release includes
+
+        improved logic around rule validation to prevent that.
+
+        ']
 notes:
+- files:
+  - - releasenotes/notes/policy-check-performance-fbad83c7a4afd7d7.yaml
+    - !!binary |
+      OTA5YTFlYTNhN2FjZWI2ZTA2MzcwNThiOWM2YTUzZDE0MDQzZDZkMQ==
+  version: 1.38.1
+- files:
+  - - releasenotes/notes/bug-1779172-c1323c0f647bc44c.yaml
+    - !!binary |
+      Nzc1NjQxYTVmYzU0OWMyMGJlMzdjZjg2MmRlY2EzOTRiZjdmMmQyMQ==
+  - - releasenotes/notes/expand-cli-docs-02c2f13adbe251c0.yaml
+    - !!binary |
+      M2ZlOTViMmFlYmRlMjI2YmFiMGQ3MTA4ODVmNjBhMTg2MjQ5OWIxNg==
+  version: 1.38.0
 - files:
   - - releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml
     - !!binary |
