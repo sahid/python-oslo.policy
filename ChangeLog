@@ -1,6 +1,39 @@
 CHANGES
 =======
 
+1.41.0
+------
+
+* Add ability to pass in target data for the oslopolicy-checker
+* Pass in policy name as part of the oslopolicy-check check call
+* Unit test for CLI
+
+1.40.1
+------
+
+* Update sphinx extension logging
+* Add minor nits in testing documentation
+* Clean up .gitignore references to personal tools
+* Add guidelines for naming policies
+
+1.40.0
+------
+
+* Add docs for developers testing APIs
+
+1.39.1
+------
+
+* sphinxext: Start parsing 'DocumentedRuleDefault.description' as rST
+* Docs: Remove references to JSON format
+* add lib-forward-testing-python3 test job
+* Imported Translations from Zanata
+* add python 3.6 unit test job
+* Move \_capture\_stdout to a common place
+* Remove PyPI downloads
+* import zuul job settings from project-config
+* Update reno for stable/rocky
+
 1.38.1
 ------
 
@@ -13,6 +46,7 @@ CHANGES
 * Pass dictionary as creds in policy tests
 * Fix requirements and convert to stestr
 * Add blueprints and releasenotes link to README
+* generator: Reimplement wrapping of 'description'
 * fix tox python3 overrides
 
 1.37.0
