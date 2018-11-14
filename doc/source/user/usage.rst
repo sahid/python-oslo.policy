@@ -180,6 +180,110 @@ interact with the resource the policy protects. The `method` should be the HTTP
 verb corresponding to the `path`. The list of `operations` can be supplied with
 multiple dictionaries if the policy is used to protect multiple paths.
 
+Naming policies
+---------------
+
+Policy names are an integral piece of information in understanding how
+OpenStack's policy engine works. Developers protect APIs using policy names.
+Operators use policy names to override policies in their deployment. Having
+consistent policy names across OpenStack services is essential to providing a
+pleasant user experience. The following rules are guidelines to help you, as a
+developer, build unique and descriptive policy names.
+
+Service types
+~~~~~~~~~~~~~
+
+Policy names should be specific about the service that uses them. The service
+type should also follow a known standard, which is the `service-types authority
+<https://service-types.openstack.org/service-types.json>`_.  Using an existing
+standard avoids confusing users by reusing an established reference. For
+example, instead of using `keystone` as the service in a policy name, you
+should use `identity`, since it is not specific to one implementation. It's
+also more specific about the functionality provided by the service instead of
+having readers maintain a mental mapping between service code name and
+functionality it provides.
+
+Resources and subresources
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Users may interact with resources exposed by a service's API. You should
+include the name of a resource in the policy name, and it should be singular.
+For example, policies that protect the user API should use `identity:user`,
+instead of `identity:users`.
+
+Some services might have subresources. For example, a fixed IP address could be
+considered a subresource of an IP address. You should separate open-form
+compound words with a hyphen and not an underscore. This spacing convention
+maintains consistency with spacing used in the service types authority. For
+example, use `ip-address` instead of `ip_address`. Having more than one way to
+separate compound words within a single convention is confusing and prone to
+accidentally introducing inconsistencies.
+
+Resource names should be minimalist and contain only characters needed to
+describe the resource. Extra information should be omitted from the resource
+altogether. Use `agent` instead of `os-agents`, even if the URL path of the
+resource uses `/os-agents`.
+
+Actions and subactions
+~~~~~~~~~~~~~~~~~~~~~~
+
+Actions are specific things that users can do to resources. Typical actions are
+`create`, `get`, `list`, `update`, and `delete`. These action definitions are
+independent of the HTTP method used to implement their underlying API, which is
+intentional. This independence is important because two different services may
+implement the same action using two different HTTP methods. For example, use
+`compute:server:list` as a policy name for listing servers instead of
+`compute:server:get_all` or `compute:server:get-all`. Using `all` in the policy
+name itself implies returning every possible entity when the actual response
+may be filtered based on the user's authority. In other words, list servers for
+a domain administrator managing many different projects within that domain
+could be very different from a member of a project listing servers owned by a
+single project.
+
+Some services have the ability to list resources with greater detail. Depending
+on the context, those additional details might be sensitive in nature and
+require more strict RBAC permissions than `list`. In this case, use
+`compute:server:list-detail` as opposed to `compute:server:detail`. By using a
+compound word, we're being more descriptive about what the `detail` actually
+means.
+
+Subactions are optionally available for you to add clarity about resource
+actions. For example, `compute:server:resize:confirm` is an example of how you
+can compound an action (resize) with a subaction (confirm) to explicitly name a
+policy.
+
+Actions that are open form compound words should use hyphens instead of
+underscores for spacing. This spacing is consistent with the service types
+authority and resource names for open form compound words. For example, use
+`compute:server:resize-state` instead of `compute:server:resize_state`.
+
+Resource Attributes
+~~~~~~~~~~~~~~~~~~~
+
+Resource attributes may be used in policy names, and are entirely optional. If
+you need to include the attribute of a resource in the name, you should place
+it after the resource or subresource portion. For example, use
+`compute:flavor:private:list` to name a policy for listing all private flavors.
+
+Putting it all together
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that you know what services types, resources, attributes, and actions are
+within the context of policy names, let establish the order you should use
+them. Policy names should increase in detail as you read it. This results in
+the following syntax::
+
+  <service-type>:<resource>[:<subresource>][:<attribute>]:<action>[:<subaction>]
+
+You should delimit each segment of the name with a colon (:). The following are
+examples for existing OpenStack APIs::
+
+  identity:user:list
+  block-storage:volume:extend
+  compute:server:resize:confirm
+  compute:flavor:private:list
+  network:ip-address:fixed-ip-address:create
+
 Setting scope
 -------------
 
@@ -334,3 +438,153 @@ where policy-redundant.conf looks like::
     namespace = nova
 
 Output will go to stdout.
+
+Testing default policies
+========================
+
+Developers need to reliably unit test policies used to protect APIs. Having
+robust unit test coverage increases confidence that changes won't negatively
+affect user experience. This document is intended to help you understand
+historical context behind testing practices you may find in your service. More
+importantly, it's going to describe testing patterns you can use to increase
+confidence in policy testing and coverage.
+
+History
+-------
+
+Before the ability to register policies in code, developers maintained policies
+in a policy file, which included all policies used by the service. Developers
+maintained policy files within the project source code, which contained the
+default policies for the service.
+
+Once it became possible to register policies in code, policy files became
+irrelevant because you could generate them. Generating policy files from code
+made maintaining documentation for policies easier and allowed for a single
+source of truth. Registering policies in code also meant testing no longer
+required a policy file, since the default policies were in the service itself.
+
+At this point, it is important to note that policy enforcement requires an
+authorization context based on the user making the request (e.g., is the user
+allowed to do the operation they're asking to do). Within OpenStack, this
+authorization context is relayed to services by the token used to call an API,
+which comes from an OpenStack identity service. In its purest form, you can
+think of authorization context as the roles a user has on a project, domain, or
+system. Services can feed the authorization context into policy enforcement,
+which determines if a user is allowed to do something.
+
+The coupling between the authorization context, ultimately the token, and the
+policy enforcement mechanism raises the bar for effectively testing policies
+and APIs. Service developers want to ensure the functionality specific to their
+service works, and not dwell on the implementation details of an authorization
+system. Additionally, they want to keep unit tests lightweight, as opposed to
+requiring a separate system to issue tokens for authorization, crossing the
+boundary of unit testing to integration testing.
+
+Because of this, you typically see one of two approaches taken concerning
+policies and test code across OpenStack services.
+
+One approach is to supply a policy file specifically for testing that overrides
+the sample policy file or default policies in code. This file contains mostly
+policies without proper check strings, which relaxes the authorization enforced
+by the service using oslo.policy. Without proper check strings, it's possible
+to access APIs without building context objects or using tokens from an
+identity service.
+
+The other approach is to mock policy enforcement to succeed unconditionally.
+Since developers are bypassing the code within the policy engine, supplying a
+proper authorization context doesn't have an impact on the APIs used in the
+test case.
+
+Both methods let developers focus on validating the domain-specific
+functionality of their service without needing to understand the intricacies of
+policy enforcement. Unfortunately, bypassing API authorization testing comes at
+the expense of introducing gaps where the default policies may break
+unexpectedly with new changes. If the tests don't assert the default behavior,
+it's likely that seemingly simple changes negatively impact users or operators,
+regardless of that being the intent of the developer.
+
+Testing policies
+----------------
+
+Fortunately, you can test policies without needing to deal with tokens by using
+context objects directly, specifically a RequestContext object. Chances are
+your service is already using these to represent information from middleware
+that sits in front of the API. Using context for authorization strikes a
+perfect balance between integration testing and exercising just enough
+authorization to ensure policies sufficiently protect APIs. The oslo.policy
+library also accepts context objects and automatically translates properties to
+values used when evaluating policy, which makes using them even more natural.
+
+To use RequestContext objects effectively, you need to understand the policy
+under test. Then, you can model a context object appropriately for the test
+case. The idea is to build a context object to use in the request that either
+fails or passes policy enforcement. For example, assume you're testing a
+default policy like the following:
+
+::
+
+    from oslo_config import cfg
+
+    CONF = cfg.CONF
+    enforcer = policy.Enforcer(CONF, policy_file=_POLICY_PATH)
+
+    enforcer.register_default(
+        policy.RuleDefault('identity:create_region', 'role:admin')
+    )
+
+Enforcement here is straightforward in that a user with a role called ``admin``
+may access this API. You can model this in a request context by setting these
+attributes explicitly:
+
+::
+
+    from oslo_context import context
+
+    context = context.RequestContext()
+    context.roles = ['admin']
+
+Depending on how your service deploys the API in unit tests, you can either
+provide a fake context as you supply the request, or mock the return value of
+the context to return the one you've built.
+
+You can also supply scope information for policies with complex check strings
+or the use of scope types. For example, consider the following default policy:
+
+::
+
+    from oslo_config import cfg
+
+    CONF = cfg.CONF
+    enforcer = policy.Enforcer(CONF, policy_file=_POLICY_PATH)
+
+    enforcer.register_default(
+        policy.RuleDefault('identity:create_region', 'role:admin',
+        scope_types=['system'])
+    )
+
+We can model it using the following request context object, which includes
+scope:
+
+::
+
+    from oslo_context import context
+
+    context = context.RequestContext()
+    context.roles = ['admin']
+    context.system_scope = 'all'
+
+Note that ``all`` is a unique system scope target that signifies the user is
+authorized to operate on the deployment system. Conversely, the following is an
+example of a context modeling a project-scoped token:
+
+::
+
+    import uuid
+    from oslo_context import context
+
+    context = context.RequestContext()
+    context.roles = ['admin']
+    context.project_id = uuid.uuid4().hex
+
+The significance here is the difference between administrator authorization on
+the deployment system and administrator authorization on a project.
