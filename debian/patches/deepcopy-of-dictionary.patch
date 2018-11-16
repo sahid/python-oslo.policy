@@ -1,0 +1,47 @@
+From bc3ea13a4b8ca99005e665b9fd004cb67eefd763 Mon Sep 17 00:00:00 2001
+From: Corey Bryant <corey.bryant@canonical.com>
+Date: Fri, 16 Nov 2018 09:56:10 -0500
+Subject: [PATCH] Ensure token_fixture.SCOPED_TOKEN_FIXTURE isn't modified
+
+Using deepcopy allows the copy of token_fixture.SCOPED_TOKEN_FIXTURE
+to be edited without modifying the original dictionary.
+
+Change-Id: If24fc4fa6afb6ce4f818335c6c37df84b9cbeb37
+Closes-Bug: 1803722
+---
+ oslo_policy/tests/test_shell.py | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/oslo_policy/tests/test_shell.py b/oslo_policy/tests/test_shell.py
+index 97c64c8..b318ef2 100644
+--- a/oslo_policy/tests/test_shell.py
++++ b/oslo_policy/tests/test_shell.py
+@@ -13,6 +13,7 @@
+ #    License for the specific language governing permissions and limitations
+ #    under the License.
+ 
++from copy import deepcopy
+ import mock
+ from oslo_serialization import jsonutils
+ 
+@@ -44,7 +45,7 @@ class CheckerTestCase(base.PolicyBaseTestCase):
+         is_admin = False
+         stdout = self._capture_stdout()
+ 
+-        access_data = token_fixture.SCOPED_TOKEN_FIXTURE["token"]
++        access_data = deepcopy(token_fixture.SCOPED_TOKEN_FIXTURE["token"])
+         target = {
+             "project_id": access_data['project']['id']
+         }
+@@ -66,7 +67,7 @@ class CheckerTestCase(base.PolicyBaseTestCase):
+     def test_pass_rule_parameters_with_custom_target(self, call_mock):
+         apply_rule = None
+         is_admin = False
+-        access_data = token_fixture.SCOPED_TOKEN_FIXTURE["token"]
++        access_data = deepcopy(token_fixture.SCOPED_TOKEN_FIXTURE["token"])
+         access_data['roles'] = [
+             role['name'] for role in access_data['roles']]
+         access_data['project_id'] = access_data['project']['id']
+-- 
+2.19.1
+
