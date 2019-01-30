@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import collections
 import sys
 
 from oslo_serialization import jsonutils
 
+from oslo_config import cfg
 from oslo_policy import policy
 
 
@@ -53,12 +53,17 @@ def flatten(d, parent_key=''):
 
 def tool(policy_file, access_file, apply_rule, is_admin=False,
          target_file=None):
-    access = access_file.read()
+    with open(access_file, "rb", 0) as a:
+        access = a.read()
+
     access_data = jsonutils.loads(access)['token']
     access_data['roles'] = [role['name'] for role in access_data['roles']]
     access_data['project_id'] = access_data['project']['id']
     access_data['is_admin'] = is_admin
-    policy_data = policy_file.read()
+
+    with open(policy_file, "rb", 0) as p:
+        policy_data = p.read()
+
     rules = policy.Rules.load(policy_data, "default")
 
     class Object(object):
@@ -67,7 +72,9 @@ def tool(policy_file, access_file, apply_rule, is_admin=False,
     o.rules = rules
 
     if target_file:
-        target = target_file.read()
+        with open(target_file, "rb", 0) as t:
+            target = t.read()
+
         target_data = flatten(jsonutils.loads(target))
     else:
         target_data = {"project_id": access_data['project_id']}
@@ -77,43 +84,42 @@ def tool(policy_file, access_file, apply_rule, is_admin=False,
         rule = rules[apply_rule]
         _try_rule(key, rule, target_data, access_data, o)
         return
-    for key, rule in rules.items():
+    for key, rule in sorted(rules.items()):
         if ":" in key:
             _try_rule(key, rule, target_data, access_data, o)
 
 
 def main():
-    parser = argparse.ArgumentParser(sys.argv[0])
-    parser.add_argument(
-        '--policy',
-        required=True,
-        type=argparse.FileType('rb', 0),
-        help='path to a policy file')
-    parser.add_argument(
-        '--access',
-        required=True,
-        type=argparse.FileType('rb', 0),
-        help='path to a file containing OpenStack Identity API' +
-        ' access info in JSON format')
-    parser.add_argument(
-        '--target',
-        type=argparse.FileType('rb', 0),
-        help='path to a file containing custom target info in' +
-        ' JSON format. This will be used to evaluate the policy with.')
-    parser.add_argument(
-        '--rule',
-        help='rule to test')
+    conf = cfg.ConfigOpts()
 
-    parser.add_argument(
-        '--is_admin',
-        help='set is_admin=True on the credentials used for the evaluation')
+    conf.register_cli_opt(cfg.StrOpt(
+        'policy',
+        required=True,
+        help='path to a policy file.'))
 
-    args = parser.parse_args()
-    try:
-        is_admin = args.is_admin.lower() == "true"
-    except Exception:
-        is_admin = False
-    tool(args.policy, args.access, args.rule, is_admin, args.target)
+    conf.register_cli_opt(cfg.StrOpt(
+        'access',
+        required=True,
+        help='path to a file containing OpenStack Identity API '
+             'access info in JSON format.'))
+
+    conf.register_cli_opt(cfg.StrOpt(
+        'target',
+        help='path to a file containing custom target info in '
+             'JSON format. This will be used to evaluate the policy with.'))
+
+    conf.register_cli_opt(cfg.StrOpt(
+        'rule',
+        help='rule to test.'))
+
+    conf.register_cli_opt(cfg.BoolOpt(
+        'is_admin',
+        help='set is_admin=True on the credentials used for the evaluation.',
+        default=False))
+
+    conf()
+
+    tool(conf.policy, conf.access, conf.rule, conf.is_admin, conf.target)
 
 
 if __name__ == "__main__":

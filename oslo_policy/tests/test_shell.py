@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import mock
 from oslo_serialization import jsonutils
 
@@ -28,6 +29,13 @@ class CheckerTestCase(base.PolicyBaseTestCase):
 "sampleservice:sample_rule": ""
 '''
 
+    SAMPLE_POLICY_UNSORTED = '''---
+"sample_rule": "role:service"
+"sampleservice:sample_rule2": ""
+"sampleservice:sample_rule0": ""
+"sampleservice:sample_rule1": ""
+'''
+
     def setUp(self):
         super(CheckerTestCase, self).setUp()
         self.create_config_file("policy.yaml", self.SAMPLE_POLICY)
@@ -38,13 +46,14 @@ class CheckerTestCase(base.PolicyBaseTestCase):
     @mock.patch("oslo_policy._checks.TrueCheck.__call__")
     def test_pass_rule_parameters(self, call_mock):
 
-        policy_file = open(self.get_config_file_fullname('policy.yaml'), 'r')
-        access_file = open(self.get_config_file_fullname('access.json'), 'r')
+        policy_file = self.get_config_file_fullname('policy.yaml')
+        access_file = self.get_config_file_fullname('access.json')
         apply_rule = None
         is_admin = False
         stdout = self._capture_stdout()
 
-        access_data = token_fixture.SCOPED_TOKEN_FIXTURE["token"]
+        access_data = copy.deepcopy(
+            token_fixture.SCOPED_TOKEN_FIXTURE["token"])
         target = {
             "project_id": access_data['project']['id']
         }
@@ -62,11 +71,36 @@ class CheckerTestCase(base.PolicyBaseTestCase):
 '''
         self.assertEqual(expected, stdout.getvalue())
 
+    def test_pass_rule_parameters_sorted(self):
+        self.create_config_file("policy.yaml", self.SAMPLE_POLICY_UNSORTED)
+
+        policy_file = self.get_config_file_fullname('policy.yaml')
+        access_file = self.get_config_file_fullname('access.json')
+        apply_rule = None
+        is_admin = False
+        stdout = self._capture_stdout()
+
+        access_data = copy.deepcopy(
+            token_fixture.SCOPED_TOKEN_FIXTURE["token"])
+        access_data['roles'] = [
+            role['name'] for role in access_data['roles']]
+        access_data['project_id'] = access_data['project']['id']
+        access_data['is_admin'] = is_admin
+
+        shell.tool(policy_file, access_file, apply_rule, is_admin)
+
+        expected = '''passed: sampleservice:sample_rule0
+passed: sampleservice:sample_rule1
+passed: sampleservice:sample_rule2
+'''
+        self.assertEqual(expected, stdout.getvalue())
+
     @mock.patch("oslo_policy._checks.TrueCheck.__call__")
     def test_pass_rule_parameters_with_custom_target(self, call_mock):
         apply_rule = None
         is_admin = False
-        access_data = token_fixture.SCOPED_TOKEN_FIXTURE["token"]
+        access_data = copy.deepcopy(
+            token_fixture.SCOPED_TOKEN_FIXTURE["token"])
         access_data['roles'] = [
             role['name'] for role in access_data['roles']]
         access_data['project_id'] = access_data['project']['id']
@@ -80,9 +114,9 @@ class CheckerTestCase(base.PolicyBaseTestCase):
             "target.json",
             jsonutils.dumps(sample_target))
 
-        policy_file = open(self.get_config_file_fullname('policy.yaml'), 'r')
-        access_file = open(self.get_config_file_fullname('access.json'), 'r')
-        target_file = open(self.get_config_file_fullname('target.json'), 'r')
+        policy_file = self.get_config_file_fullname('policy.yaml')
+        access_file = self.get_config_file_fullname('access.json')
+        target_file = self.get_config_file_fullname('target.json')
         stdout = self._capture_stdout()
 
         shell.tool(policy_file, access_file, apply_rule, is_admin,
@@ -97,8 +131,8 @@ class CheckerTestCase(base.PolicyBaseTestCase):
 
     def test_all_nonadmin(self):
 
-        policy_file = open(self.get_config_file_fullname('policy.yaml'), 'r')
-        access_file = open(self.get_config_file_fullname('access.json'), 'r')
+        policy_file = self.get_config_file_fullname('policy.yaml')
+        access_file = self.get_config_file_fullname('access.json')
         apply_rule = None
         is_admin = False
         stdout = self._capture_stdout()
