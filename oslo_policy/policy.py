@@ -230,6 +230,7 @@ import warnings
 from oslo_config import cfg
 from oslo_context import context
 from oslo_serialization import jsonutils
+from oslo_utils import strutils
 import six
 import yaml
 
@@ -574,66 +575,11 @@ class Enforcer(object):
                                                         force_reload, False)
 
             for default in self.registered_rules.values():
-                if default.deprecated_rule:
-                    deprecated_msg = (
-                        'Policy "%(old_name)s":"%(old_check_str)s" was '
-                        'deprecated in %(release)s in favor of "%(name)s":'
-                        '"%(check_str)s". Reason: %(reason)s. Either ensure '
-                        'your deployment is ready for the new default or '
-                        'copy/paste the deprecated policy into your policy '
-                        'file and maintain it manually.' % {
-                            'old_name': default.deprecated_rule.name,
-                            'old_check_str': default.deprecated_rule.check_str,
-                            'release': default.deprecated_since,
-                            'name': default.name,
-                            'check_str': default.check_str,
-                            'reason': default.deprecated_reason
-                        }
-                    )
-                    if default.deprecated_rule.name != default.name and (
-                            default.deprecated_rule.name in self.rules):
-                        # Print a warning because the actual policy name is
-                        # changing. If deployers are relying on an override for
-                        # foo:bar and it's getting renamed to foo:create_bar
-                        # then they need to be able to see that before they
-                        # roll out the next release.
-                        warnings.warn(deprecated_msg)
-                    if (default.deprecated_rule.check_str !=
-                            default.check_str and default.name not in
-                            self.rules):
-                        # In this case, the default check_str is changing. We
-                        # need to let operators know that this is going to
-                        # change. If they don't want to override it, they are
-                        # going to have to make sure the right infrastructure
-                        # exists before they upgrade. This overrides the new
-                        # check with an OrCheck that combines the new and old
-                        # check_str attributes from the new and deprecated
-                        # policies. This will make it so that deployments don't
-                        # break on upgrade, but they receive log messages
-                        # telling them stuff is going to change if they don't
-                        # maintain the policy manually or add infrastructure to
-                        # their deployment to support the new policy.
-                        default.check = _parser.parse_rule(
-                            default.check_str + ' or ' +
-                            default.deprecated_rule.check_str
-                        )
-                        warnings.warn(deprecated_msg)
-                if default.deprecated_for_removal and (
-                        default.name in self.file_rules):
-                    # If a policy is going to be removed altogether, then we
-                    # need to make sure we let operators know so they can clean
-                    # up their policy files, if they are overriding it.
-                    warnings.warn(
-                        'Policy "%(policy)s":"%(check_str)s" was '
-                        'deprecated for removal in %(release)s. Reason: '
-                        '%(reason)s. Its value may be silently ignored in '
-                        'the future.' % {
-                            'policy': default.name,
-                            'check_str': default.check_str,
-                            'release': default.deprecated_since,
-                            'reason': default.deprecated_reason
-                        }
-                    )
+                if default.deprecated_for_removal:
+                    self._emit_deprecated_for_removal_warning(default)
+                elif default.deprecated_rule:
+                    self._handle_deprecated_rule(default)
+
                 if default.name not in self.rules:
                     self.rules[default.name] = default.check
 
@@ -666,6 +612,87 @@ class Enforcer(object):
             raise InvalidDefinitionError(undefined_checks + cyclic_checks)
 
         return not violation
+
+    def _emit_deprecated_for_removal_warning(self, default):
+        # If the policy is being removed completely, we need to let operators
+        # know that the policy is going to be silently ignored in the future
+        # and they can remove it from their overrides since it isn't being
+        # replaced by another policy.
+        if default.name in self.file_rules:
+            warnings.warn(
+                'Policy "%(policy)s":"%(check_str)s" was deprecated for '
+                'removal in %(release)s. Reason: %(reason)s. Its value may be '
+                'silently ignored in the future.' % {
+                    'policy': default.name,
+                    'check_str': default.check_str,
+                    'release': default.deprecated_since,
+                    'reason': default.deprecated_reason
+                }
+            )
+
+    def _handle_deprecated_rule(self, default):
+        """Handle cases where a policy rule has been deprecated.
+
+        :param default: an instance of RuleDefault that contains an instance of
+                        DeprecatedRule
+        """
+
+        deprecated_rule = default.deprecated_rule
+
+        deprecated_msg = (
+            'Policy "%(old_name)s":"%(old_check_str)s" was deprecated in '
+            '%(release)s in favor of "%(name)s":"%(check_str)s". Reason: '
+            '%(reason)s. Either ensure your deployment is ready for the new '
+            'default or copy/paste the deprecated policy into your policy '
+            'file and maintain it manually.' % {
+                'old_name': deprecated_rule.name,
+                'old_check_str': deprecated_rule.check_str,
+                'release': default.deprecated_since,
+                'name': default.name,
+                'check_str': default.check_str,
+                'reason': default.deprecated_reason
+            }
+        )
+
+        # Print a warning because the actual policy name is changing. If
+        # operators are relying on an override for foo:bar and it's getting
+        # renamed to foo:create_bar then they need to be able to see that
+        # before they roll out the next release. If the policy name is in
+        # self.file_rules, we know that it's being overridden.
+        if deprecated_rule.name != default.name and (
+                deprecated_rule.name in self.file_rules):
+
+            warnings.warn(deprecated_msg)
+
+            # If the deprecated policy is being overridden and doesn't match
+            # the default deprecated policy, override the new policy's default
+            # with the old check string. This should prevents unwanted exposure
+            # to APIs on upgrade.
+            if (self.file_rules[deprecated_rule.name].check
+                    != _parser.parse_rule(deprecated_rule.check_str)):
+                if default.name not in self.file_rules.keys():
+                    self.rules[default.name] = self.file_rules[
+                        deprecated_rule.name
+                    ].check
+
+        # In this case, the default check string is changing. We need to let
+        # operators know that this is going to change. If they don't want to
+        # override it, they are going to have to make sure the right
+        # infrastructure exists before they upgrade. This overrides the new
+        # check with an OrCheck that combines the new and old check_str
+        # attributes from the new and deprecated policies. This will make it so
+        # that deployments don't break on upgrade, but they receive log
+        # messages telling them stuff is going to change if they don't maintain
+        # the policy manually or add infrastructure to their deployment to
+        # support the new policy.
+        if (deprecated_rule.check_str != default.check_str
+                and default.name not in self.file_rules):
+
+            default.check = _parser.parse_rule(
+                default.check_str + ' or ' +
+                deprecated_rule.check_str
+            )
+            warnings.warn(deprecated_msg)
 
     def _undefined_check(self, check):
         '''Check if a RuleCheck references an undefined rule.'''
@@ -838,6 +865,42 @@ class Enforcer(object):
             )
             raise InvalidContextObject(msg)
 
+        if LOG.isEnabledFor(logging.DEBUG):
+            try:
+                # NOTE(jdennis) Although a MutableMapping behaves like
+                # a dict oslo.strutils.mask_dict_password() requires a
+                # dict. Bug #1804528 was opened to fix this, once that
+                # bug is fixed the conversion to dict can be removed.
+                if isinstance(creds, dict):
+                    creds_dict = creds
+                elif isinstance(creds, collections.MutableMapping):
+                    creds_dict = dict(creds)
+                else:
+                    raise TypeError('unexpected type %(creds_type)s' %
+                                    {'creds_type': type(creds)})
+                creds_dict = strutils.mask_dict_password(
+                    copy.deepcopy(creds_dict)
+                )
+                creds_msg = jsonutils.dumps(creds_dict,
+                                            skipkeys=True, sort_keys=True)
+            except Exception as e:
+                creds_msg = ('cannot format data, exception: %(exp)s' %
+                             {'exp': e})
+
+            try:
+                target_dict = strutils.mask_dict_password(
+                    copy.deepcopy(target)
+                )
+                target_msg = jsonutils.dumps(target_dict,
+                                             skipkeys=True, sort_keys=True)
+            except Exception as e:
+                target_msg = ('cannot format data, exception: %(exp)s' %
+                              {'exp': e})
+
+            LOG.debug('enforce: rule=%s creds=%s target=%s',
+                      rule.__class__ if isinstance(rule, _checks.BaseCheck)
+                      else '"%s"' % rule, creds_msg, target_msg)
+
         # Allow the rule to be a Check tree
         if isinstance(rule, _checks.BaseCheck):
             # If the thing we're given is a Check, we don't know the
@@ -864,12 +927,11 @@ class Enforcer(object):
                 # attributes provided in `creds`.
                 if creds.get('system'):
                     token_scope = 'system'
+                elif creds.get('domain_id'):
+                    token_scope = 'domain'
                 else:
-                    # If the token isn't system-scoped then we're dealing with
-                    # either a domain-scoped token or a project-scoped token.
-                    # From a policy perspective, both are "project" operations.
-                    # Whether or not the project is a domain depends on where
-                    # it sits in the hierarchy.
+                    # If the token isn't system-scoped or domain-scoped then
+                    # we're dealing with a project-scoped token.
                     token_scope = 'project'
 
                 registered_rule = self.registered_rules.get(rule)

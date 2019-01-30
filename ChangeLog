@@ -1,6 +1,48 @@
 CHANGES
 =======
 
+2.0.0
+-----
+
+
+1.44.1
+------
+
+* Fix sample config value when set\_defaults is used
+* Fixes is\_admin type from StrOpt to BoolOpt
+* Fixes file access using with statements
+
+1.44.0
+------
+
+* Use template for lower-constraints
+* Use oslo.config instead of argparse
+
+1.43.1
+------
+
+* Prevent sensitive target data from being logged
+
+1.43.0
+------
+
+* Change openstack-dev to openstack-discuss
+
+1.42.0
+------
+
+* Fully log RBAC enforcement data
+* Add domain scope support for scope types
+* Make upgrades more robust with policy overrides
+* oslopolicy-checker: iterate through rules in sorted order
+* Enhance test to prevent JSON parsing regression
+* Correct typo in docs
+
+1.41.1
+------
+
+* Fix usage of token fixture in shell tests
+
 1.41.0
 ------
 

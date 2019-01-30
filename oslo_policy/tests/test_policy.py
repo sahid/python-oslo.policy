@@ -121,14 +121,45 @@ class RulesTestCase(test_base.BaseTestCase):
 
     @mock.patch.object(_parser, 'parse_rule', lambda x: x)
     def test_load_json_invalid_exc(self):
-        # When the JSON isn't valid, ValueError is raised on load_json.
-        # Note the trailing , in the exemplar is invalid JSON.
+        # When the JSON isn't valid, ValueError is raised on load.
         exemplar = """{
     "admin_or_owner": [["role:admin"], ["project_id:%(project_id)s"]],
     "default": [
 }"""
         self.assertRaises(ValueError, policy.Rules.load, exemplar,
                           'default')
+
+        # However, since change I43782d245d7652ba69613b26fe598ac79ec19929,
+        # policy.Rules.load() first tries loading with the really fast
+        # jsonutils.loads(), and if that fails, it tries loading with
+        # yaml.safe_load().  Since YAML is a superset of JSON, some strictly
+        # invalid JSON can be parsed correctly by policy.Rules.load() without
+        # raising an exception.  But that means that since 1.17.0, we've been
+        # accepting (strictly speaking) illegal JSON policy files, and for
+        # backward compatibility, we should continue to do so.  Thus the
+        # following are here to prevent regressions:
+
+        # JSON requires double quotes, but the YAML parser doesn't care
+        bad_but_acceptable = """{
+    'admin_or_owner': [["role:admin"], ["project_id:%(project_id)s"]],
+    'default': []
+}"""
+        self.assertTrue(policy.Rules.load(bad_but_acceptable, 'default'))
+
+        # JSON does not allow bare keys, but the YAML parser doesn't care
+        bad_but_acceptable = """{
+    admin_or_owner: [["role:admin"], ["project_id:%(project_id)s"]],
+    default: []
+}"""
+        self.assertTrue(policy.Rules.load(bad_but_acceptable, 'default'))
+
+        # JSON is picky about commas, but the YAML parser is more forgiving
+        # (Note the trailing , in the exemplar is invalid JSON.)
+        bad_but_acceptable = """{
+    admin_or_owner: [["role:admin"], ["project_id:%(project_id)s"]],
+    default: [],
+}"""
+        self.assertTrue(policy.Rules.load(bad_but_acceptable, 'default'))
 
     @mock.patch.object(_parser, 'parse_rule', lambda x: x)
     def test_load_empty_data(self):
@@ -155,8 +186,8 @@ default: []
 
     @mock.patch.object(_parser, 'parse_rule', lambda x: x)
     def test_load_yaml_invalid_exc(self):
-        # When the JSON isn't valid, ValueError is raised on load().
-        # Note the trailing , in the exemplar is invalid JSON.
+        # When the JSON is seriously invalid, ValueError is raised on load().
+        # (See test_load_json_invalid_exc for what 'seriously invalid' means.)
         exemplar = """{
 # Define a custom rule.
 admin_or_owner: role:admin or project_id:%(project_id)s
@@ -742,6 +773,7 @@ class EnforcerTest(base.PolicyBaseTestCase):
 
     @mock.patch.object(policy.Enforcer, '_map_context_attributes_into_creds')
     def test_enforcer_call_map_context_attributes(self, map_mock):
+        map_mock.return_value = {}
         rule = policy.RuleDefault(name='fake_rule', check_str='role:test')
         self.enforcer.register_default(rule)
 
@@ -789,6 +821,105 @@ class EnforcerTest(base.PolicyBaseTestCase):
         policy_values = request_context.to_policy_values()
         target_dict = {}
         self.enforcer.enforce('fake_rule', target_dict, policy_values)
+
+    def test_enforcer_understands_system_scope(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['system']
+        )
+        self.enforcer.register_default(rule)
+
+        ctx = context.RequestContext(system_scope='all')
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, ctx)
+
+    def test_enforcer_raises_invalid_scope_with_system_scope_type(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['system']
+        )
+        self.enforcer.register_default(rule)
+
+        # model a domain-scoped token, which should fail enforcement
+        ctx = context.RequestContext(domain_id='fake')
+        target_dict = {}
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
+
+        # model a project-scoped token, which should fail enforcement
+        ctx = context.RequestContext(project_id='fake')
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
+
+    def test_enforcer_understands_domain_scope(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['domain']
+        )
+        self.enforcer.register_default(rule)
+
+        ctx = context.RequestContext(domain_id='fake')
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, ctx)
+
+    def test_enforcer_raises_invalid_scope_with_domain_scope_type(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['domain']
+        )
+        self.enforcer.register_default(rule)
+
+        # model a system-scoped token, which should fail enforcement
+        ctx = context.RequestContext(system_scope='all')
+        target_dict = {}
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
+
+        # model a project-scoped token, which should fail enforcement
+        ctx = context.RequestContext(project_id='fake')
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
+
+    def test_enforcer_understands_project_scope(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['project']
+        )
+        self.enforcer.register_default(rule)
+
+        ctx = context.RequestContext(project_id='fake')
+        target_dict = {}
+        self.enforcer.enforce('fake_rule', target_dict, ctx)
+
+    def test_enforcer_raises_invalid_scope_with_project_scope_type(self):
+        self.conf.set_override('enforce_scope', True, group='oslo_policy')
+        rule = policy.RuleDefault(
+            name='fake_rule', check_str='role:test', scope_types=['project']
+        )
+        self.enforcer.register_default(rule)
+
+        # model a system-scoped token, which should fail enforcement
+        ctx = context.RequestContext(system_scope='all')
+        target_dict = {}
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
+
+        # model a domain-scoped token, which should fail enforcement
+        ctx = context.RequestContext(domain_id='fake')
+        self.assertRaises(
+            policy.InvalidScope, self.enforcer.enforce, 'fake_rule',
+            target_dict, ctx
+        )
 
 
 class EnforcerNoPolicyFileTest(base.PolicyBaseTestCase):
@@ -1013,10 +1144,10 @@ class RuleDefaultTestCase(base.PolicyBaseTestCase):
         opt = policy.RuleDefault(
             name='foo',
             check_str='role:bar',
-            scope_types=['project', 'system']
+            scope_types=['project', 'domain', 'system']
         )
 
-        self.assertEqual(opt.scope_types, ['project', 'system'])
+        self.assertEqual(opt.scope_types, ['project', 'domain', 'system'])
 
     def test_ensure_scope_types_are_unique(self):
         self.assertRaises(
@@ -1201,6 +1332,124 @@ class DocumentedRuleDefaultDeprecationTestCase(base.PolicyBaseTestCase):
             operations=[{'path': '/v1/foos/', 'method': 'POST'}],
             deprecated_for_removal=True,
             deprecated_since='N'
+        )
+
+    def test_override_deprecated_policy_with_old_name(self):
+        # Simulate an operator overriding a policy
+        rules = jsonutils.dumps({'foo:bar': 'role:bazz'})
+        self.create_config_file('policy.json', rules)
+
+        # Deprecate the policy name and check string in favor of something
+        # better.
+        deprecated_rule = policy.DeprecatedRule(
+            name='foo:bar',
+            check_str='role:fizz'
+        )
+        rule_list = [policy.DocumentedRuleDefault(
+            name='foo:create_bar',
+            check_str='role:bang',
+            description='Create a bar.',
+            operations=[{'path': '/v1/bars', 'method': 'POST'}],
+            deprecated_rule=deprecated_rule,
+            deprecated_reason='"role:bang" is a better default',
+            deprecated_since='N'
+        )]
+        self.enforcer.register_defaults(rule_list)
+
+        # Make sure the override supplied by the operator using the old policy
+        # name is used in favor of the old or new default.
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['fizz']})
+        )
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bang']})
+        )
+        self.assertTrue(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bazz']})
+        )
+
+    def test_override_deprecated_policy_with_new_name(self):
+        # Simulate an operator overriding a policy using the new policy name
+        rules = jsonutils.dumps({'foo:create_bar': 'role:bazz'})
+        self.create_config_file('policy.json', rules)
+
+        # Deprecate the policy name and check string in favor of something
+        # better.
+        deprecated_rule = policy.DeprecatedRule(
+            name='foo:bar',
+            check_str='role:fizz'
+        )
+        rule_list = [policy.DocumentedRuleDefault(
+            name='foo:create_bar',
+            check_str='role:bang',
+            description='Create a bar.',
+            operations=[{'path': '/v1/bars', 'method': 'POST'}],
+            deprecated_rule=deprecated_rule,
+            deprecated_reason='"role:bang" is a better default',
+            deprecated_since='N'
+        )]
+        self.enforcer.register_defaults(rule_list)
+
+        # Make sure the override supplied by the operator is being used in
+        # place of either default value.
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['fizz']})
+        )
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bang']})
+        )
+        self.assertTrue(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bazz']})
+        )
+
+    def test_override_both_new_and_old_policy(self):
+        # Simulate an operator overriding a policy using both the the new and
+        # old policy names. The following doesn't make a whole lot of sense
+        # because the overrides are conflicting, but we want to make sure that
+        # oslo.policy uses foo:create_bar instead of foo:bar.
+        rules_dict = {
+            'foo:create_bar': 'role:bazz',
+            'foo:bar': 'role:wee'
+        }
+        rules = jsonutils.dumps(rules_dict)
+        self.create_config_file('policy.json', rules)
+
+        # Deprecate the policy name and check string in favor of something
+        # better.
+        deprecated_rule = policy.DeprecatedRule(
+            name='foo:bar',
+            check_str='role:fizz'
+        )
+        rule_list = [policy.DocumentedRuleDefault(
+            name='foo:create_bar',
+            check_str='role:bang',
+            description='Create a bar.',
+            operations=[{'path': '/v1/bars', 'method': 'POST'}],
+            deprecated_rule=deprecated_rule,
+            deprecated_reason='"role:bang" is a better default',
+            deprecated_since='N'
+        )]
+        self.enforcer.register_defaults(rule_list)
+
+        # The default check string for the old policy name foo:bar should fail
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['fizz']})
+        )
+
+        # The default check string for the new policy name foo:create_bar
+        # should fail
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bang']})
+        )
+
+        # The override for the old policy name foo:bar should fail
+        self.assertFalse(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['wee']})
+        )
+
+        # The override for foo:create_bar should pass
+        self.assertTrue(
+            self.enforcer.enforce('foo:create_bar', {}, {'roles': ['bazz']})
         )
 
 
