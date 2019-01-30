@@ -1,11 +1,11 @@
-python-oslo.policy (2.0.0-0ubuntu1) UNRELEASED; urgency=medium
+python-oslo.policy (2.0.0-0ubuntu1) disco; urgency=medium
 
   * New upstream release for OpenStack Stein.
   * d/control: Align (Build-)Depends with upstream.
   * d/p/*: Drop, included upstream.
   * d/tests/control: Drop use of needs-recommends.
 
- -- James Page <james.page@ubuntu.com>  Wed, 30 Jan 2019 10:17:35 +0000
+ -- James Page <james.page@ubuntu.com>  Wed, 30 Jan 2019 14:23:35 +0000
 
 python-oslo.policy (1.41.0-0ubuntu2) disco; urgency=medium
 
