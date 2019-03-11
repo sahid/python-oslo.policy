@@ -67,6 +67,7 @@ oslo_policy/tests/test_sphinxext.py
 oslo_policy/tests/test_sphinxpolicygen.py
 oslo_policy/tests/token_fixture.py
 releasenotes/notes/Pass-target-dict-to-oslopolicy-checker-87185d40aec413ee.yaml
+releasenotes/notes/add-policy-upgrade-command-a65bc4f760e5d8b1.yaml
 releasenotes/notes/add-scope-types-to-sphinxext-cacd845c4575e965.yaml
 releasenotes/notes/add-sphinxpolicygen-39e2f8fa24930b0c.yaml
 releasenotes/notes/add_custom_rule_check_plugins-3c15c2c7ca5e.yaml

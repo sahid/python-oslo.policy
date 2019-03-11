@@ -2,6 +2,7 @@
 oslopolicy-checker = oslo_policy.shell:main
 oslopolicy-list-redundant = oslo_policy.generator:list_redundant
 oslopolicy-policy-generator = oslo_policy.generator:generate_policy
+oslopolicy-policy-upgrade = oslo_policy.generator:upgrade_policy
 oslopolicy-sample-generator = oslo_policy.generator:generate_sample
 
 [oslo.config.opts]
