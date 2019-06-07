@@ -1,4 +1,4 @@
-python-oslo.policy (2.2.0-0ubuntu1) UNRELEASED; urgency=medium
+python-oslo.policy (2.2.0-0ubuntu1) eoan; urgency=medium
 
   * Merge from Debian experimental.  Remaining changes:
     - d/control: Enable autopkgtest-pkg-python testsuite.
