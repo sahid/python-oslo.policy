@@ -1,4 +1,4 @@
-python-oslo.policy (2.1.1-1ubuntu1) UNRELEASED; urgency=medium
+python-oslo.policy (2.2.0-0ubuntu1) UNRELEASED; urgency=medium
 
   * Merge from Debian experimental.  Remaining changes:
     - d/control: Enable autopkgtest-pkg-python testsuite.
@@ -6,8 +6,9 @@ python-oslo.policy (2.1.1-1ubuntu1) UNRELEASED; urgency=medium
     - d/rules: Run all unit tests.
     - d/t/python-ostestr: Run unit tests for dep8.
     - d/watch: Use upstream release tarballs.
+  * New upstream release for OpenStack Train.
 
- -- Corey Bryant <corey.bryant@canonical.com>  Fri, 07 Jun 2019 10:54:33 -0400
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 07 Jun 2019 12:08:13 -0400
 
 python-oslo.policy (2.1.1-1) experimental; urgency=medium
 
