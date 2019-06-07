@@ -4,33 +4,27 @@ UPSTREAM_GIT := https://github.com/openstack/oslo.policy.git
 include /usr/share/openstack-pkg-tools/pkgos.make
 
 %:
-	dh $@ --buildsystem=python_distutils --with python2,python3,sphinxdoc
+	dh $@ --buildsystem=python_distutils --with python3,sphinxdoc
+
+override_dh_auto_clean:
+	rm -rf build
+
+override_dh_auto_build:
+	echo "Do nothing..."
 
 override_dh_auto_install:
-	pkgos-dh_auto_install
+	pkgos-dh_auto_install --no-py2
 
 override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
-	pkgos-dh_auto_test
+	pkgos-dh_auto_test --no-py2
 endif
 
 override_dh_sphinxdoc:
-	sphinx-build -b html doc/source debian/python-oslo.policy-doc/usr/share/doc/python-oslo.policy-doc/html
-	dh_sphinxdoc -O--buildsystem=python_distutils
-
-override_dh_clean:
-	dh_clean -O--buildsystem=python_distutils
-	rm -rf build
-
-# Commands not to run
-override_dh_installcatalogs:
-override_dh_installemacsen override_dh_installifupdown:
-override_dh_installinfo override_dh_installmenu override_dh_installmime:
-override_dh_installmodules override_dh_installlogcheck:
-override_dh_installpam override_dh_installppp override_dh_installudev override_dh_installwm:
-override_dh_installxfonts override_dh_gconf override_dh_icons override_dh_perl override_dh_usrlocal:
-override_dh_installcron override_dh_installdebconf:
-override_dh_installlogrotate override_dh_installgsettings:
+ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
+	PYTHONPATH=. PYTHON=python3 python3 -m sphinx -b html doc/source debian/python-oslo.policy-doc/usr/share/doc/python-oslo.policy-doc/html
+	dh_sphinxdoc
+endif
