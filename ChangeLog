@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+2.2.0
+-----
+
+* OpenDev Migration Patch
+* Clarify policy\_file configuration option help text
+* Update master for stable/stein
+* Corrects tox.ini snippet to point to config file
+* Provide more specific error when namespace is missing
+* Add py36 and py37 tox envs
+
 2.1.1
 -----
 
