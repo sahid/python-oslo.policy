@@ -7,6 +7,7 @@ python-oslo.policy (2.2.0-0ubuntu1) UNRELEASED; urgency=medium
     - d/t/python-ostestr: Run unit tests for dep8.
     - d/watch: Use upstream release tarballs.
   * New upstream release for OpenStack Train.
+  * d/control: Align (Build-)Depends with upstream.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Fri, 07 Jun 2019 12:08:13 -0400
 
