@@ -1,4 +1,4 @@
-python-oslo.policy (2.2.0-0ubuntu3) UNRELEASED; urgency=medium
+python-oslo.policy (2.2.0-0ubuntu3) eoan; urgency=medium
 
   * d/tests/*: Drop Python 2.7 tests.
 
