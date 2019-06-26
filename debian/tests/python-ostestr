@@ -2,7 +2,7 @@
 
 set -ex
 
-for py in $(py3versions -r 2>/dev/null) $(pyversions -r 2>/dev/null); do
+for py in $(py3versions -r 2>/dev/null); do
     echo "Testing with $py:"
     PYTHON=$py ostestr
     rm -rf .stestr

@@ -1,3 +1,9 @@
+python-oslo.policy (2.2.0-0ubuntu3) UNRELEASED; urgency=medium
+
+  * d/tests/*: Drop Python 2.7 tests.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Wed, 26 Jun 2019 14:11:31 -0400
+
 python-oslo.policy (2.2.0-0ubuntu2) eoan; urgency=medium
 
   * d/control, d/tests/*: Restore python-import test and drop
