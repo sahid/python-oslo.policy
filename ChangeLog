@@ -1,10 +1,31 @@
 CHANGES
 =======
 
+2.3.2
+-----
+
+
+2.3.1
+-----
+
+
+2.3.0
+-----
+
+* Add attribute to suppress deprecation warnings
+* Only alias when policy names change
+* Add unit tests on the sphinxext indent function
+* Move doc related modules to doc/requirements.txt
+* Add Python 3 Train unit tests
+* Updated from global requirements
+* Replace git.openstack.org URLs with opendev.org URLs
+* Cap Bandit below 1.6.0 and update Sphinx requirement
+
 2.2.0
 -----
 
 * OpenDev Migration Patch
+* Dropping the py35 testing
 * Clarify policy\_file configuration option help text
 * Update master for stable/stein
 * Corrects tox.ini snippet to point to config file

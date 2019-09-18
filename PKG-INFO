@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: oslo.policy
-Version: 2.2.0
+Version: 2.3.2
 Summary: Oslo Policy library
 Home-page: https://docs.openstack.org/oslo.policy/latest/
 Author: OpenStack
@@ -28,7 +28,7 @@ Description: ========================
         
         * Free software: Apache license
         * Documentation: https://docs.openstack.org/oslo.policy/latest/
-        * Source: https://git.openstack.org/cgit/openstack/oslo.policy
+        * Source: https://opendev.org/openstack/oslo.policy
         * Bugs: https://bugs.launchpad.net/oslo.policy
         * Blueprints: https://blueprints.launchpad.net/oslo.policy
         * Release Notes: https://docs.openstack.org/releasenotes/oslo.policy
@@ -44,4 +44,5 @@ Classifier: Programming Language :: Python
 Classifier: Programming Language :: Python :: 2
 Classifier: Programming Language :: Python :: 2.7
 Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
