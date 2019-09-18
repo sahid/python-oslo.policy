@@ -15,6 +15,7 @@ setup.cfg
 setup.py
 test-requirements.txt
 tox.ini
+doc/requirements.txt
 doc/source/conf.py
 doc/source/index.rst
 doc/source/admin/index.rst
