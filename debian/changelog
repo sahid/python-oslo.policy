@@ -1,3 +1,9 @@
+python-oslo.policy (2.3.2-0ubuntu1) UNRELEASED; urgency=medium
+
+  * New upstream release for OpenStack Train.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Wed, 18 Sep 2019 10:52:21 +0200
+
 python-oslo.policy (2.2.0-0ubuntu3) eoan; urgency=medium
 
   * d/tests/*: Drop Python 2.7 tests.
