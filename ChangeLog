@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+2.4.0
+-----
+
+* tox: Keeping going with docs
+* Modernize policy checker
+* Update the constraints url
+* Update master for stable/train
+* Suppress deprecation warnings in oslopolicy-list-redundant
+* Fix reference cycle caused by deprecated sample override
+
 2.3.2
 -----
 
