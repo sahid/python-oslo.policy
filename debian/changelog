@@ -5,6 +5,7 @@ python-oslo.policy (2.4.0-0ubuntu1) UNRELEASED; urgency=low
     - d/gbp.conf: Retain for gbp and pristine-tar config.
     - d/watch: Retain using openstack.org.
   * New upstream release for OpenStack Ussuri.
+  * d/control: Align (Build-)Depends with upstream
 
  -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Tue, 10 Dec 2019 10:00:28 +0100
 
