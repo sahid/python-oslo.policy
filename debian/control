@@ -35,7 +35,7 @@ Build-Depends-Indep:
  python3-yaml (>= 3.12),
  subunit,
  testrepository,
-Standards-Version: 4.3.0
+Standards-Version: 4.4.1
 Vcs-Browser: https://git.launchpad.net/~ubuntu-server-dev/ubuntu/+source/python-oslo.policy
 Vcs-Git: git://git.launchpad.net/~ubuntu-server-dev/ubuntu/+source/python-oslo.policy
 Homepage: https://github.com/openstack/oslo.policy

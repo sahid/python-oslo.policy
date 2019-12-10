@@ -20,7 +20,7 @@ override_dh_python3:
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
-	pkgos-dh_auto_test --no-py2
+	pkgos-dh_auto_test --no-py2 'oslo_policy\.tests\.(?!(.*test_fixtures\.FixtureTestCase\.test_enforce_http_true.*|.*test_fixtures\.FixtureTestCase\.test_enforce_https_true.*|.*test_policy\.EnforcerTest\.test_enforcer_understands_domain_scope.*|.*test_policy\.EnforcerTest\.test_enforcer_raises_invalid_scope_with_project_scope_type.*))'
 endif
 
 override_dh_sphinxdoc:

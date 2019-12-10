@@ -1,9 +1,52 @@
+python-oslo.policy (2.3.2-2ubuntu1) UNRELEASED; urgency=low
+
+  * Merge from Debian unstable.  Remaining changes:
+    - d/control: Enable autopkgtest-pkg-python testsuite.
+    - d/gbp.conf: Retain for gbp and pristine-tar config.
+    - d/watch: Retain using openstack.org.
+
+ -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Tue, 10 Dec 2019 09:58:36 +0100
+
+python-oslo.policy (2.3.2-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Bump Standards-Version to 4.4.1.
+
+  [ Thomas Goirand ]
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 21 Oct 2019 00:41:36 +0200
+
+python-oslo.policy (2.3.2-1) experimental; urgency=medium
+
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 16 Sep 2019 11:32:14 +0200
+
 python-oslo.policy (2.3.2-0ubuntu1) eoan; urgency=medium
 
   * New upstream release for OpenStack Train.
   * d/control: Align (Build-)Depends with upstream.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Wed, 18 Sep 2019 10:52:21 +0200
+
+python-oslo.policy (2.3.1-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Added python3-sphinxcontrib.apidoc as build-depends.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 11 Sep 2019 17:58:22 +0200
+
+python-oslo.policy (2.3.0-1) experimental; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * Bump Standards-Version to 4.4.0.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 04 Sep 2019 13:59:06 +0200
 
 python-oslo.policy (2.2.0-0ubuntu3) eoan; urgency=medium
 
@@ -30,6 +73,12 @@ python-oslo.policy (2.2.0-0ubuntu1) eoan; urgency=medium
   * d/control: Align (Build-)Depends with upstream.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Fri, 07 Jun 2019 12:08:13 -0400
+
+python-oslo.policy (2.1.1-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 17 Jul 2019 01:18:54 +0200
 
 python-oslo.policy (2.1.1-1) experimental; urgency=medium
 
