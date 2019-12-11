@@ -6,6 +6,7 @@ python-oslo.policy (2.4.0-0ubuntu1) UNRELEASED; urgency=low
     - d/watch: Retain using openstack.org.
   * New upstream release for OpenStack Ussuri.
   * d/control: Align (Build-)Depends with upstream
+  * d/t/python-import: Ensure this test is py3-only.
 
  -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Tue, 10 Dec 2019 10:00:28 +0100
 

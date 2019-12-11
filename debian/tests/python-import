@@ -1,10 +1,10 @@
 #!/bin/sh
 
-set -e
+set -ex
 
-MODULE_NAME=$(python setup.py --name | sed 's/\./_/g')
+MODULE_NAME=$(python3 setup.py --name | sed 's/\./_/g')
 
-for py in $(py3versions -r 2>/dev/null); do
+for py in $(py3versions -r 2>/dev/null) ; do
     cd "$AUTOPKGTEST_TMP"
     echo "Testing with $py:"
     $py -c "import $MODULE_NAME; print($MODULE_NAME)"
